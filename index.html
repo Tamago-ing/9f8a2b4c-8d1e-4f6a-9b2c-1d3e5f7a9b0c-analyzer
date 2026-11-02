@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="robots" content="noindex, nofollow">
+ <title>シナリオ構造 ＆ 消費者感情アナライザー PRO v7.3</title>
+ <!-- Chart.js CDN -->
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <style>
+ :root {
+ --bg-color: #0f172a;
+ --card-bg: #1e293b;
+ --border-color: #334155;
+ --text-main: #f8fafc;
+ --text-muted: #94a3b8;
+ --accent-color: #38bdf8; /* シアン（フレーム・アーク統一色） */
+ --eval-color: #a855f7; /* アイリスピンク/パープル（評価系メイン） */
+ --eval-btn-bg: #8b5cf6; /* バイオレット（評価系ボタン） */
+ --outer-color: #f59e0b;
+ --inner-color: #10b981;
+ --enemy-color: #ef4444;
+ --danger-color: #ef4444;
+ --warning-color: #f59e0b;
+ --success-color: #10b981;
+ 
+--unachieved-bg: #1a1012;
+ --unachieved-border: #4a1d24;
+ --unachieved-text: #f87171;
+ --unachieved-muted: #991b1b;
+ }
+
+ [data-theme="light"] {
+ --bg-color: #f8fafc;
+ --card-bg: #ffffff;
+ --border-color: #cbd5e1;
+ --text-main: #0f172a;
+ --text-muted: #64748b;
+ --accent-color: #0284c7;
+ --eval-color: #7e22ce;
+ --eval-btn-bg: #7c3aed;
+ --outer-color: #d97706;
+ --inner-color: #059669;
+ --enemy-color: #dc2626;
+ --danger-color: #dc2626;
+ --warning-color: #d97706;
+ --success-color: #059669;
+
+ --unachieved-bg: #fef2f2;
+ --unachieved-border: #fecaca;
+ --unachieved-text: #dc2626;
+ --unachieved-muted: #991b1b;
+ }
+
+ body {
+ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+ background-color: var(--bg-color);
+ color: var(--text-main);
+ margin: 0;
+ padding: 15px;
+ line-height: 1.35;
+ transition: background-color 0.3s, color 0.3s;
+ }
+
+ .container {
+ max-width: 1600px;
+ margin: 0 auto;
+ display: grid;
+ grid-template-columns: minmax(420px, 620px) 1fr;
+ gap: 15px;
+ }
+
+ @media (max-width: 960px) {
+ .container {
+ grid-template-columns: 1fr;
+ }
+ }
+
+ .card {
+ background-color: var(--card-bg);
+ border: 1px solid var(--border-color);
+ border-radius: 8px;
+ padding: 12px 16px;
+ box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+ margin-bottom: 12px;
+ transition: background-color 0.3s, border-color 0.3s;
+ }
+
+ .header {
+ grid-column: 1 / -1;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ border-bottom: 2px solid var(--border-color);
+ padding-bottom: 10px;
+ margin-bottom: 0;
+ }
+
+ h1 { margin: 0; font-size: 1.35rem; }
+ h3 { margin-top: 0; margin-bottom: 8px; font-size: 1.0rem; }
+ h4 { margin: 6px 0 4px 0; font-size: 0.85rem; color: var(--accent-color); }
+
+ .header-controls {
+ display: flex;
+ gap: 8px;
+ align-items: center;
+ }
+
+ .mode-toggle {
+ display: flex;
+ background: var(--bg-color);
+ padding: 3px;
+ border-radius: 6px;
+ border: 1px solid var(--border-color);
+ }
+
+ .mode-btn {
+ background: none;
+ border: none;
+ color: var(--text-muted);
+ padding: 5px 12px;
+ cursor: pointer;
+ border-radius: 4px;
+ font-weight: bold;
+ font-size: 0.8rem;
+ transition: all 0.2s;
+ }
+
+ .mode-btn.active {
+ background: var(--accent-color);
+ color: #ffffff;
+ }
+
+ .theme-toggle-btn {
+ background: transparent;
+ border: 1px solid var(--border-color);
+ color: var(--text-main);
+ padding: 4px 10px;
+ border-radius: 6px;
+ cursor: pointer;
+ font-size: 0.8rem;
+ font-weight: bold;
+ display: flex;
+ align-items: center;
+ gap: 4px;
+ transition: background-color 0.2s, border-color 0.2s;
+ }
+
+ .theme-toggle-btn:hover {
+ background: var(--beat-bg);
+ }
+
+ .form-group {
+ margin-bottom: 8px;
+ }
+
+ .form-row {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 8px;
+ }
+
+ label {
+ display: block;
+ font-size: 0.75rem;
+ color: var(--text-muted);
+ margin-bottom: 2px;
+ }
+
+ input[type="text"], select {
+ width: 100%;
+ padding: 5px 8px;
+ background: var(--bg-color);
+ border: 1px solid var(--border-color);
+ color: var(--text-main);
+ border-radius: 4px;
+ box-sizing: border-box;
+ font-size: 0.82rem;
+ }
+
+ .frame-description-box {
+ margin-top: 8px;
+ padding: 8px 12px;
+ background: rgba(0, 0, 0, 0.15);
+ border-left: 3px solid var(--accent-color);
+ border-radius: 4px;
+ font-size: 0.78rem;
+ color: var(--text-main);
+ line-height: 1.4;
+ }
+
+ [data-theme="light"] .frame-description-box {
+ background: #f1f5f9;
+ border: 1px solid #cbd5e1;
+ border-left: 3px solid var(--accent-color);
+ }
+
+ [data-theme="light"] .slider-row {
+ background: #f1f5f9;
+ border: 1px solid #e2e8f0;
+ }
+
+ .like-top3-box {
+ margin-top: 10px;
+ padding: 8px 12px;
+ background: var(--card-bg);
+ border: 1px solid var(--border-color);
+ border-radius: 6px;
+ }
+
+ .like-top3-title {
+ font-weight: bold;
+ color: var(--eval-color);
+ margin-bottom: 6px;
+ font-size: 0.82rem;
+ }
+
+ .like-top3-list {
+ display: grid;
+ gap: 4px;
+ }
+
+ .like-top3-item {
+ display: flex;
+ align-items: center;
+ gap: 6px;
+ padding: 4px 6px;
+ border-radius: 4px;
+ font-size: 0.78rem;
+ }
+
+ .like-top3-rank {
+ width: 24px;
+ font-size: 1rem;
+ flex-shrink: 0;
+ }
+
+ .like-top3-item.rank-1 { background: #fff9db; border: 1px solid #f3e8a6; }
+ .like-top3-item.rank-2 { background: #f1f3f5; border: 1px solid #d7dbe0; }
+ .like-top3-item.rank-3 { background: #f5eee7; border: 1px solid #dccbb8; }
+ [data-theme="dark"] .like-top3-item.rank-1 { background: rgba(234, 179, 8, 0.16); border-color: rgba(234, 179, 8, 0.35); }
+ [data-theme="dark"] .like-top3-item.rank-2 { background: rgba(148, 163, 184, 0.16); border-color: rgba(148, 163, 184, 0.35); }
+ [data-theme="dark"] .like-top3-item.rank-3 { background: rgba(180, 130, 80, 0.16); border-color: rgba(180, 130, 80, 0.35); }
+
+ .like-top3-empty {
+ color: var(--text-muted);
+ font-size: 0.76rem;
+ }
+
+ .arc-tag-box {
+ margin-top: 8px;
+ padding: 10px 12px;
+ background: rgba(56, 189, 248, 0.08);
+ border-left: 3px solid var(--accent-color);
+ border-radius: 4px;
+ font-size: 0.82rem;
+ color: var(--text-main);
+ }
+
+ .arc-tag-box summary {
+ cursor: pointer;
+ outline: none;
+ user-select: none;
+ font-size: 0.82rem;
+ }
+
+ .btn-group {
+ display: flex;
+ gap: 6px;
+ flex-wrap: wrap;
+ }
+
+ button {
+ padding: 5px 10px;
+ border: none;
+ border-radius: 4px;
+ cursor: pointer;
+ font-weight: bold;
+ font-size: 0.78rem;
+ transition: opacity 0.2s;
+ }
+
+ button:hover { opacity: 0.85; }
+
+ .btn-primary { background: var(--accent-color); color: #fff; }
+ .btn-danger { background: var(--danger-color); color: #fff; }
+ .btn-secondary { background: #475569; color: #fff; }
+ .btn-warning { background: var(--warning-color); color: #000; }
+ .btn-eval { background: var(--eval-btn-bg); color: #fff; }
+
+ details summary {
+ cursor: pointer;
+ font-weight: bold;
+ font-size: 0.88rem;
+ color: var(--text-main);
+ outline: none;
+ user-select: none;
+ }
+
+ .compact-save-grid {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 8px;
+ margin-top: 8px;
+ padding-top: 8px;
+ border-top: 1px solid var(--border-color);
+ }
+
+ .sliders-scroll-container {
+ max-height: 520px;
+ overflow-y: auto;
+ padding-right: 6px;
+ }
+
+ .sliders-scroll-container::-webkit-scrollbar {
+ width: 6px;
+ }
+ .sliders-scroll-container::-webkit-scrollbar-thumb {
+ background: var(--border-color);
+ border-radius: 3px;
+ }
+
+ .slider-row {
+ display: flex;
+ flex-direction: column;
+ gap: 4px;
+ margin-bottom: 6px;
+ background: rgba(0,0,0,0.1);
+ padding: 6px 8px;
+ border-radius: 4px;
+ }
+
+ .slider-row-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ gap: 8px;
+ }
+
+ .slider-row .step-label {
+ width: 140px;
+ font-size: 0.72rem;
+ font-weight: bold;
+ color: var(--accent-color);
+ white-space: nowrap;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ cursor: pointer;
+ text-decoration: underline dotted;
+ }
+
+ .slider-row .mapping-input {
+ flex: 1;
+ padding: 2px 6px;
+ font-size: 0.72rem;
+ height: 22px;
+ background: var(--bg-color);
+ border: 1px solid var(--border-color);
+ }
+
+ .slider-inputs {
+ display: flex;
+ flex: 1;
+ gap: 5px;
+ }
+
+ .slider-group {
+ display: flex;
+ flex-direction: column;
+ flex: 1;
+ }
+
+ .slider-group label {
+ font-size: 0.62rem;
+ margin-bottom: 0px;
+ text-align: center;
+ white-space: nowrap;
+ }
+
+ input[type="range"] {
+ width: 100%;
+ margin: 0;
+ height: 14px;
+ cursor: pointer;
+ }
+
+ .num-input {
+ width: 32px !important;
+ text-align: center;
+ padding: 1px !important;
+ font-size: 0.72rem;
+ height: 20px;
+ }
+
+ .feedback-item {
+ padding: 6px 10px;
+ border-radius: 5px;
+ margin-bottom: 6px;
+ font-size: 0.82rem;
+ border-left: 4px solid;
+ }
+
+ .feedback-danger { background: rgba(239, 68, 68, 0.12); border-color: var(--danger-color); color: var(--text-main); }
+ .feedback-warning { background: rgba(245, 158, 11, 0.12); border-color: var(--warning-color); color: var(--text-main); }
+ .feedback-info { background: rgba(56, 189, 248, 0.12); border-color: var(--accent-color); color: var(--text-main); }
+
+ .achievements-container {
+ display: grid;
+ grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+ gap: 8px;
+ margin-bottom: 4px;
+ }
+
+ .achievement-card {
+ border-radius: 6px;
+ padding: 6px 10px;
+ transition: all 0.2s ease;
+ }
+
+ .achievement-card.unachieved {
+ background: var(--unachieved-bg);
+ border: 1px solid var(--unachieved-border);
+ }
+
+ .achievement-card.unachieved details summary {
+ font-size: 0.78rem;
+ color: var(--unachieved-text);
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 4px;
+ }
+
+ .achievement-card.unachieved .badge-status {
+ background: var(--unachieved-muted);
+ color: #ffffff;
+ border: 1px solid var(--unachieved-border);
+ white-space: nowrap;
+ flex-shrink: 0;
+ font-size: 0.65rem;
+ padding: 2px 6px;
+ border-radius: 4px;
+ }
+
+ .achievement-card.achieved {
+ background: rgba(16, 185, 129, 0.1);
+ border: 1px solid var(--success-color);
+ box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+ }
+
+ .achievement-card.achieved details summary {
+ font-size: 0.78rem;
+ color: var(--success-color);
+ font-weight: bold;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 4px;
+ }
+
+ .achievement-card.achieved .badge-status {
+ background: var(--success-color);
+ color: #fff;
+ border: none;
+ font-weight: bold;
+ white-space: nowrap;
+ flex-shrink: 0;
+ font-size: 0.65rem;
+ padding: 2px 6px;
+ border-radius: 4px;
+ }
+
+ .achievement-title-text {
+ white-space: nowrap;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ display: inline-block;
+ }
+
+ .achievement-desc {
+ margin-top: 6px;
+ padding-top: 6px;
+ border-top: 1px solid var(--border-color);
+ font-size: 0.74rem;
+ color: var(--text-main);
+ line-height: 1.3;
+ }
+
+ .chart-container {
+ position: relative;
+ height: 440px;
+ width: 100%;
+ }
+
+ .tab-menu {
+ display: flex;
+ gap: 6px;
+ margin-bottom: 10px;
+ border-bottom: 1px solid var(--border-color);
+ padding-bottom: 6px;
+ }
+
+ .tab-btn {
+ background: rgba(0,0,0,0.1);
+ border: 1px solid var(--border-color);
+ color: var(--text-muted);
+ padding: 4px 10px;
+ border-radius: 4px;
+ cursor: pointer;
+ font-size: 0.78rem;
+ }
+
+ .tab-btn.active {
+ background: var(--eval-color);
+ color: #fff;
+ border-color: var(--eval-color);
+ font-weight: bold;
+ }
+
+ .comment-card {
+ background: rgba(0,0,0,0.05);
+ border: 1px solid var(--border-color);
+ border-radius: 6px;
+ padding: 8px 10px;
+ margin-bottom: 8px;
+ font-size: 0.8rem;
+ }
+
+ .comment-user {
+ color: var(--eval-color);
+ font-weight: bold;
+ font-size: 0.75rem;
+ margin-right: 6px;
+ }
+
+ .comment-text {
+ color: var(--text-main);
+ white-space: pre-wrap;
+ line-height: 1.4;
+ }
+
+ .comment-details {
+ margin-top: 2px;
+ }
+
+ .comment-summary {
+ cursor: pointer;
+ outline: none;
+ user-select: none;
+ display: flex;
+ align-items: center;
+ font-size: 0.78rem;
+ color: var(--text-main);
+ }
+
+ .comment-preview {
+ color: var(--text-muted);
+ font-size: 0.78rem;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+ flex: 1;
+ }
+
+ .comment-full-body {
+ margin-top: 6px;
+ padding: 6px 8px;
+ background: var(--bg-color);
+ border-left: 2px solid var(--eval-color);
+ border-radius: 0 4px 4px 0;
+ color: var(--text-main);
+ white-space: pre-wrap;
+ word-break: break-word;
+ line-height: 1.4;
+ font-size: 0.78rem;
+ }
+
+ .modal-overlay {
+ position: fixed;
+ top: 0; left: 0; right: 0; bottom: 0;
+ background: rgba(0,0,0,0.65);
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ z-index: 1000;
+ }
+
+ .modal-content {
+ background: var(--card-bg);
+ border: 1px solid var(--accent-color);
+ border-radius: 8px;
+ padding: 16px 20px;
+ max-width: 650px;
+ max-height: 80vh;
+ overflow-y: auto;
+ width: 90%;
+ box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+ }
+
+ .modal-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 10px;
+ border-bottom: 1px solid var(--border-color);
+ padding-bottom: 6px;
+ }
+
+ .modal-title {
+ font-size: 1.0rem;
+ font-weight: bold;
+ color: var(--accent-color);
+ }
+
+ .modal-close {
+ background: none;
+ border: none;
+ color: var(--text-muted);
+ font-size: 1.2rem;
+ cursor: pointer;
+ }
+
+ .hidden { display: none !important; }
+ </style>
+</head>
+<body>
+
+<div class="container">
+ <div class="header">
+ <div>
+ <h1>シナリオ構造 ＆ 消費者感情アナライザー PRO v7.3</h1>
+ </div>
+ <div class="header-controls">
+ <!-- モード切り替えトグル -->
+ <div class="mode-toggle">
+ <button class="mode-btn active" id="btn-basic" onclick="setMode('basic')">基本モード (2軸)</button>
+ <button class="mode-btn" id="btn-detailed" onclick="setMode('detailed')">詳細モード (4軸)</button>
+ </div>
+ <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()">🌙 ダーク</button>
+ </div>
+ </div>
+
+ <!-- 左カラム：設定パネル -->
+ <div>
+ <div class="card">
+ <h3>⚙️ 構成パラメータ設定 (15ビート & 物理進行度)</h3>
+ <div class="form-group">
+ <div class="form-row">
+ <div>
+ <label for="media-type-select">① メディアタイプ選択</label>
+ <select id="media-type-select" onchange="updateFrameOptions()">
+ <option value="none">未選択</option>
+ <option value="movie">①一括消費型（映画・短編作品）</option>
+ <option value="webtoon_short">②超短期縦型（Webtoon・Short作品）</option>
+ <option value="anime_manga">③連続連載型（アニメ・漫画作品）</option>
+ <option value="game">④ゲーム型（RPG・ADV作品）</option>
+ <option value="social_game">⑤ソーシャルゲーム型（ライフサービス型作品）</option>
+ </select>
+ </div>
+ <div>
+ <label for="frame-select">② フレームワーク（目標感情曲線）選択</label>
+ <select id="frame-select" onchange="applyPreset()">
+ <option value="none">メディアを選択してください</option>
+ </select>
+ </div>
+ </div>
+ <div id="frame-description" class="frame-description-box">
+ メディアとフレームワークを選択すると、目標感情曲線のガイドラインが適用され、ここに構造解説が表示されます。
+ </div>
+ </div>
+
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+ <h4 style="margin:0;">進行度・パラメータ入力 (15ビート)</h4>
+ <button class="btn-warning" style="padding: 2px 6px; font-size:0.72rem;" onclick="resetAllValues()">全数値リセット (0)</button>
+ </div>
+ 
+<div id="sliders-container" class="sliders-scroll-container"></div>
+ </div>
+
+ <div class="card">
+ <details id="card-data-details">
+ <summary>📁 作品データ & 評価連携（JSON / 評価収集）</summary>
+ <div class="compact-save-grid">
+ <div>
+ <div class="form-group">
+ <label for="project-title">作品タイトル</label>
+ <input type="text" id="project-title" value="無題のプロジェクト">
+ </div>
+ <div class="btn-group">
+ <button class="btn-primary" onclick="saveToLocalStorage()">リストに保存</button>
+ <button class="btn-secondary" onclick="resetForm()">新規作成</button>
+ </div>
+ </div>
+ <div>
+ <div class="form-group">
+ <label for="save-list">保存済みリスト</label>
+ <select id="save-list">
+ <option value="">-- データを選択 --</option>
+ </select>
+ </div>
+ <div class="btn-group">
+ <button class="btn-secondary" onclick="loadFromLocalStorage()">読み込み</button>
+ <button class="btn-danger" onclick="deleteFromLocalStorage()">削除</button>
+ </div>
+ </div>
+ </div>
+
+ <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+ <label style="font-weight:bold; color:var(--accent-color);">【作者用】データ入出力</label>
+ <div class="btn-group" style="margin-top: 4px;">
+ <button class="btn-secondary" onclick="exportJSON()">プロットデータJSON出力</button>
+ <button class="btn-secondary" onclick="document.getElementById('import-file').click()">プロットJSON読み込み</button>
+ <!-- 3. 画像一括エクスポートボタン -->
+ <button class="btn-primary" onclick="exportReportImage()">分析レポート画像出力 (.png)</button>
+ <input type="file" id="import-file" class="hidden" accept=".json" onchange="importJSON(event)">
+ </div>
+ </div>
+
+ <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+ <label style="font-weight:bold; color:var(--eval-color);">【評価フォーム連携】第三者フィードバック収集</label>
+ <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">
+ 進行度マッピングを定義した「評価依頼JSON」を出力し、評価者から届いた評価JSONを取り込みます。
+ </div>
+ <div class="btn-group">
+ <button class="btn-eval" onclick="exportEvaluationForm()">評価依頼JSON出力</button>
+ <button class="btn-eval" onclick="document.getElementById('import-eval-file').click()">評価データJSONインポート</button>
+ <button class="btn-danger" style="padding: 2px 6px; font-size:0.72rem;" onclick="clearEvaluations()">評価クリア</button>
+ <input type="file" id="import-eval-file" class="hidden" accept=".json" multiple onchange="importEvaluationJSON(event)">
+ </div>
+ </div>
+ </details>
+ </div>
+ </div>
+
+ <!-- 右カラム：グラフ ＆ 自動診断結果 ＆ フィードバック -->
+ <div>
+ <div class="card">
+ <h3>📊 15ビート構造 ＆ 感情曲線可視化</h3>
+ <details id="arc-tag-details" class="arc-tag-box">
+ <summary>
+ <strong>ストーリーアーク判定 (ヴォネガット/バーモント大学分類):</strong> <span id="arc-type-text">計算中...</span>
+ </summary>
+ <div id="arc-detail-box" style="margin-top:8px; font-size:0.78rem; line-height:1.45; border-top:1px solid rgba(255,255,255,0.15); padding-top:6px;" class="hidden"></div>
+ </details>
+ <div class="chart-container" style="margin-top:8px;">
+ <canvas id="scenarioChart"></canvas>
+ </div>
+ <div id="like-top3-box" class="like-top3-box">
+ <div class="like-top3-title">👍 いいね率Top3</div>
+ <div id="like-top3-list" class="like-top3-list"></div>
+ </div>
+ </div>
+
+ <div class="card">
+ <details id="card-achievements-details">
+ <summary style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+ <span>✨ 優れたドラマ構造の達成状況</span>
+ <span id="achievement-badge" style="background: var(--accent-color); color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; margin-right: 10px;">達成状況: 0/4</span>
+ </summary>
+ <div class="achievements-container" id="achievements-container" style="margin-top:10px;"></div>
+ </details>
+ </div>
+
+ <div class="card">
+ <details id="card-diagnostics-details">
+ <summary style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+ <span>🔍 自動構造診断 ＆ 読者ギャップアラート</span>
+ <span id="diagnostics-summary-badge" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; margin-right: 10px;">⚪ 【プロット未入力】スライダーを入力してプロットを設定してください。自動診断が実行されます。</span>
+ </summary>
+ <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:10px; margin-bottom:6px;">
+ <div>
+ <button class="btn-secondary" style="font-size:0.72rem; padding:2px 6px;" onclick="openModal('rules-modal')">評価基準一覧</button>
+ <button class="btn-secondary" style="font-size:0.72rem; padding:2px 6px;" onclick="openModal('arc-list-modal')">ストーリーアーク一覧</button>
+ </div>
+ </div>
+ <div id="feedback-container"></div>
+ </details>
+ </div>
+
+ <div class="card">
+ <details id="card-feedback-details">
+ <summary>💬 フィードバック・コメント</summary>
+ <div style="margin-top: 10px;">
+ <div class="tab-menu">
+ <button class="tab-btn active" id="tab-beats" onclick="switchFeedbackTab('beats')">ビート別 推せるポイント</button>
+ <button class="tab-btn" id="tab-overall" onclick="switchFeedbackTab('overall')">総合評価・感想コメント</button>
+ </div>
+ <div id="feedback-tab-content"></div>
+ </div>
+ </details>
+ </div>
+ </div>
+</div>
+
+<!-- 1. ビート説明モーダル -->
+<div id="beat-modal" class="modal-overlay hidden" onclick="closeModal('beat-modal', event)">
+ <div class="modal-content" onclick="event.stopPropagation()">
+ <div class="modal-header">
+ <div class="modal-title" id="modal-beat-title">ビート説明</div>
+ <button class="modal-close" onclick="closeModal('beat-modal')">&times;</button>
+ </div>
+ <div id="modal-beat-body" style="font-size: 0.82rem; color: var(--text-main); line-height: 1.5;"></div>
+ </div>
+</div>
+
+<!-- 2. 評価基準一覧モーダル -->
+<div id="rules-modal" class="modal-overlay hidden" onclick="closeModal('rules-modal', event)">
+ <div class="modal-content" onclick="event.stopPropagation()">
+ <div class="modal-header">
+ <div class="modal-title">🔍 自動構造診断・達成条件基準一覧</div>
+ <button class="modal-close" onclick="closeModal('rules-modal')">&times;</button>
+ </div>
+ <div style="font-size: 0.78rem; color: var(--text-main); line-height: 1.5;">
+ <p style="margin-top:0; color:var(--accent-color); font-weight:bold;">【優れたドラマ構造（達成カード）の判定条件】</p>
+ <ul style="padding-left:18px; margin-bottom:12px;">
+ <li><strong>ジェットコースター効果</strong>: 感情値の急変動（±40以上）が1箇所有在（3箇所有在は警告）。</li>
+ <li class="detailed-only-rule"><strong>優れた内面葛藤（詳細モード限定）</strong>: 「外的状況」と「内的状況（メンタル）」に40pt以上のギャップが存在。</li>
+ <li class="detailed-only-rule"><strong>劇的アイロニー（詳細モード限定）</strong>: 主人公の外的優位（Outer>=60）の裏で敵の脅威（Enemy>=70）が高まっている。</li>
+ <li class="detailed-only-rule"><strong>主人公の内面覚醒（詳細モード限定）</strong>: どん底（Outer<=30）から内的感情（Inner）が+30pt以上急上昇。</li>
+ </ul>
+ <p style="color:var(--warning-color); font-weight:bold; margin-bottom:4px;">【自動アラート（警告・危険）の検出条件】</p>
+ <ul style="padding-left:18px; margin-top:0;">
+ <li><strong>読者体験ギャップ <span style="color:var(--danger-color); font-weight:bold;">[危険]</span></strong>: 予想値と読者評価の差が30pt以上（評価JSONインポート時）。</li>
+ <li><strong>序盤離脱リスク <span style="color:var(--danger-color); font-weight:bold;">[危険]</span></strong>: 12%地点（Catalyst）の予想感情が50未満。</li>
+ <li><strong>カタルシス不足 <span style="color:var(--danger-color); font-weight:bold;">[危険]</span></strong>: 全話最低点からクライマックス（77%〜100%）の差が40未満。</li>
+ <li><strong>中弛み <span style="color:var(--warning-color); font-weight:bold;">[警告]</span></strong>: 35%〜65%（第2幕中盤）の変動幅が5pt以下。</li>
+ <li><strong>感情飽和 <span style="color:var(--warning-color); font-weight:bold;">[警告]</span></strong>: 中盤（25%〜65%）で80以上の高刺激が3ステップ連続。</li>
+ <li><strong>唐突な解決 <span style="color:var(--danger-color); font-weight:bold;">[危険]</span></strong>: 絶望から助走なしに第3幕へ急回復。</li>
+ <li><strong>結末の未着地 <span style="color:var(--warning-color); font-weight:bold;">[警告]</span></strong>: クライマックスの緊張が高止まり（13: >=80, 14: >=85）したまま終了。</li>
+ <li><strong>ジェットコースター効果（過剰） <span style="color:var(--warning-color); font-weight:bold;">[警告]</span></strong>: 感情の急変（±40以上）が3箇所有在。</li>
+ <li><strong>ビルドアップ不足 <span style="color:var(--warning-color); font-weight:bold;">[警告]</span></strong>: 90%クライマックスに向けた65%からの盛り上がり（差が20未満）が不足。</li>
+ <li><strong>感情の全般的不全 <span style="color:var(--danger-color); font-weight:bold;">[危険(低)]</span> / <span style="color:var(--warning-color); font-weight:bold;">[警告(高)]</span></strong>: 作品全体の感情平均値が35未満（暗すぎる）または80超（メリハリ不足）。</li>
+ <li><strong>クライマックス高揚注意 <span style="color:var(--warning-color); font-weight:bold;">[警告]</span></strong>: 90%（クライマックス）の感情値がそれ以前の最高値より低い。</li>
+ <li><strong>ミッドポイント過剰高揚 <span style="color:var(--warning-color); font-weight:bold;">[警告]</span></strong>: 50%での高揚感（>=85）が高すぎ、90%での上昇余地（差が10未満）を圧迫。</li>
+ <li><strong>第3幕不全・決戦前失速 <span style="color:var(--danger-color); font-weight:bold;">[危険]</span></strong>: 77%から90%にかけて感情値の上昇が見られず失速。</li>
+ <li class="detailed-only-rule"><strong>危機感欠如・無双化（詳細モード限定） <span style="color:var(--warning-color); font-weight:bold;">[警告]</span></strong>: 中盤（25%〜65%）を通して主人公が常に圧倒的優位（Outer>=60かつOuter>Enemy）。</li>
+ <li class="detailed-only-rule"><strong>過剰ストレス（詳細モード限定） <span style="color:var(--danger-color); font-weight:bold;">[危険]</span></strong>: 状況・メンタルともにどん底（Outer<=20かつInner<=20）が3ステップ以上継続。</li>
+ <li class="detailed-only-rule"><strong>All Is Lost未配置（詳細モード限定） <span style="color:var(--warning-color); font-weight:bold;">[警告]</span></strong>: 68%（絶望・どん底）で明確な絶望（Outer>30かつInner>30）が存在しない。</li>
+ <li class="detailed-only-rule"><strong>脅威の不完全燃焼（詳細モード限定） <span style="color:var(--danger-color); font-weight:bold;">[危険]</span></strong>: 100%（結末）時点で障害・敵の脅威度が50以上残存。</li>
+ </ul>
+ </div>
+ </div>
+</div>
+
+<!-- 3. ストーリーアーク一覧モーダル -->
+<div id="arc-list-modal" class="modal-overlay hidden" onclick="closeModal('arc-list-modal', event)">
+ <div class="modal-content" onclick="event.stopPropagation()">
+ <div class="modal-header">
+ <div class="modal-title">📈 6大ストーリーアーク分類（バーモント大学研究）</div>
+ <button class="modal-close" onclick="closeModal('arc-list-modal')">&times;</button>
+ </div>
+ <div id="arc-list-body" style="font-size: 0.78rem; color: var(--text-main); line-height: 1.5;"></div>
+ </div>
+</div>
+
+<script>
+ const BEATS = [
+ { percent: 1, beat: "1. Opening Image", labelJa: "オープニング", desc: "物語の始点。主人公の現状の生活像と作品全体のトーン・雰囲気を提示します。", key: "opening" },
+ { percent: 5, beat: "2. Theme Stated", labelJa: "テーマの提示", desc: "物語を通じて主人公が学ぶべき「教訓・命題」が第三者によって提示されます。", key: "theme" },
+ { percent: 10, beat: "3. Set-Up", labelJa: "セットアップ", desc: "日常の様子、主人公の抱える欠落（Defect）や世界観の背景を描写します。", key: "setup" },
+ { percent: 12, beat: "4. Catalyst", labelJa: "きっかけ", desc: "平和な日常を壊す事件（インシグニア）が発生し、変化を余儀なくされます。", key: "catalyst" },
+ { percent: 15, beat: "5. Debate", labelJa: "葛藤", desc: "未知の世界へ踏み出すことへの恐怖や迷い、躊躇を描く期間です。", key: "debate" },
+ { percent: 25, beat: "6. Break Into 2", labelJa: "第2幕への突入", desc: "主人公が決意を固め、日常を離れて「非日常の世界（第2幕）」へ突入します。", key: "break2" },
+ { percent: 27, beat: "7. B Story", labelJa: "サブプロット", desc: "メインテーマを深めるための関係性（恋人、師匠、相棒など）が登場します。", key: "bstory" },
+ { percent: 35, beat: "8. Fun & Games", labelJa: "お楽しみ", desc: "作品の前提（コンセプト）の魅力を最大限に魅せる見せ場・展開です。", key: "fungames" },
+ { percent: 50, beat: "9. Midpoint", labelJa: "ミッドポイント", desc: "物語の折り返し地点。仮の勝利または仮の敗北により、リスクが跳ね上がります。", key: "midpoint" },
+ { percent: 65, beat: "10. Bad Guys Close In", labelJa: "迫りくる悪意", desc: "敵の脅威が増すと同時に、チーム内の不和や内面の葛藤が深刻化します。", key: "badguys" },
+ { percent: 68, beat: "11. All Is Lost", labelJa: "絶望・どん底", desc: "全てを失い、最大の危機に直面する絶望の瞬間。「古い自分」の死を意味します。", key: "allislost" },
+ { percent: 75, beat: "12. Dark Night of Soul", labelJa: "魂の暗闇", desc: "絶望の底で内面を深く省察し、真のテーマ（必要な変化）を理解します。", key: "darknight" },
+ { percent: 77, beat: "13. Break Into 3", labelJa: "第3幕への突入", desc: "新たな覚悟と解決策を得て、最終決戦に向けて再び立ち上がります。", key: "break3" },
+ { percent: 90, beat: "14. Finale", labelJa: "クライマックス", desc: "これまでの学びを結集し、宿敵や最大の試練に決着をつけます。", key: "finale" },
+ { percent: 100, beat: "15. Final Image", labelJa: "ファイナルイメージ", desc: "変化を遂げた新たな日常。冒頭（Opening Image）との対比で成長を示します。", key: "finalimage" }
+ ];
+
+ const FRAME_PRESETS = {
+ none: {
+ label: "未選択",
+ frames: {
+ none: { 
+label: "メディアを選択してください", 
+desc: "メディアとフレームワークを選択すると、目標感情曲線のガイドラインが適用され、ここに構造解説が表示されます。",
+ values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+}
+ }
+ },
+ movie: {
+ label: "①一括消費型（映画・短編作品）",
+ frames: {
+ stc: { 
+label: "Save the Cat!（標準モデル）", 
+desc: "【標準15ビート】Midpoint(50%)での仮の成敗からAll Is Lost(68%)の絶望を経て、クライマックス(90%)で最大級のカタルシスを迎える洗練された構造。",
+ values: [40, 42, 45, 50, 45, 55, 55, 65, 75, 50, 30, 25, 60, 95, 65] 
+},
+ three_act: { 
+label: "古典的三幕構成", 
+desc: "【伝統的三幕構成】プロットポイント（幕の転換）を重視し、感情の波を比較的滑らかかつ着実に構築する王道モデル。",
+ values: [35, 40, 45, 50, 50, 60, 60, 70, 75, 55, 30, 30, 65, 95, 60] 
+},
+ hero: { 
+label: "ヒーローズ・ジャーニー", 
+desc: "【神話法則】冒険への召喚から未知の試練、どん底からの劇的な復活と帰還を描く、感情の振れ幅が極めて大きい英雄譚モデル。",
+ values: [30, 35, 40, 50, 45, 65, 60, 75, 80, 60, 20, 25, 70, 98, 70] 
+}
+ }
+ },
+ webtoon_short: {
+ label: "②超短期縦型（Webtoon・Short作品）",
+ frames: {
+ stc: { 
+label: "Save the Cat!（超短期調整版）", 
+desc: "【超短期向け】STC基本ロジックを継承しつつ、冒頭離脱を防ぐため序盤(1%)の目標値を70%と高く設定し、感情の底を浅く維持する調整版。",
+ values: [70, 75, 80, 85, 75, 80, 80, 85, 90, 75, 40, 35, 80, 98, 85] 
+},
+ fast_spiral: { 
+label: "起承転結の高速スパイラル", 
+desc: "【連続フック型】各ビートごとに小さなフックと展開を配置し、起承転結を高速回転させて読者のスクロールの手を止めさせない構造。",
+ values: [80, 85, 70, 85, 75, 90, 80, 85, 90, 80, 50, 60, 85, 95, 80] 
+},
+ hook_4act: { 
+label: "序盤フック重視の4幕構成", 
+desc: "【インパクト特化】冒頭(1%)で感情値を90%近くに爆発させ、ショッキングな未来描写や先出し演出で引き込む構成。",
+ values: [90, 85, 80, 85, 70, 75, 75, 80, 85, 70, 45, 50, 80, 95, 85] 
+}
+ }
+ },
+ anime_manga: {
+ label: "③連続連載型（アニメ・漫画作品）",
+ frames: {
+ stc: { 
+label: "Save the Cat!（連続連載調整版）", 
+desc: "【連載向け】STC基本ロジックを継承しつつ、次回への引き（クリフハンガー）を意識してビート間の感情の波を細かく動かす調整版。",
+ values: [55, 55, 60, 70, 60, 75, 70, 80, 85, 65, 35, 30, 70, 95, 75] 
+},
+ multi_layer: { 
+label: "起承転結の多重レイヤー", 
+desc: "【長編連載向け】全体の大枠の中に話数ごとの小さな起承転結を入れ子状で重ね、中弛み（35%〜65%）を防ぐ構造。",
+ values: [60, 65, 70, 75, 70, 80, 80, 85, 85, 70, 40, 45, 75, 95, 80] 
+}
+ }
+ },
+ game: {
+ label: "④ゲーム型（RPG・ADV作品）",
+ frames: {
+ stc: { 
+label: "Save the Cat!（ゲーム調整版）", 
+desc: "【体験型向け】STC基本ロジックを継承しつつ、チュートリアル期のストレスを減らし、プレイ達成感に合わせて中盤以降数値を底上げした調整版。",
+ values: [30, 35, 40, 50, 45, 60, 60, 70, 75, 65, 40, 35, 70, 95, 80] 
+},
+ ludonarrative: { 
+label: "ルード・ナラティブ（難易度同期）", 
+desc: "【難易度連動】シナリオ上の危機感とゲームプレイの難易度（ボス戦等）を完全同期させ、クリア時に最大級のカタルシスを生むモデル。",
+ values: [25, 30, 35, 45, 50, 60, 65, 75, 80, 70, 45, 50, 75, 95, 85] 
+},
+ branch_tree: { 
+label: "マルチエンディング・シナリオ分岐", 
+desc: "【マルチエンディング】シナリオ分岐を前提とし、中盤(35%〜65%)の選択で異展開へスムーズに移行できるよう感情変動幅を抑制したモデル。",
+ values: [40, 45, 50, 60, 55, 65, 70, 75, 80, 70, 35, 40, 75, 90, 75] 
+}
+ }
+ },
+ social_game: {
+ label: "⑤ソーシャルゲーム型（ライフサービス型作品）",
+ frames: {
+ stc: { 
+label: "Save the Cat!（ソシャゲ調整版）", 
+desc: "【運営型向け】STC基本ロジックを継承しつつ、日常プレイや育成の満足度を保つため感情基本値を常に高め（65%以上）に維持する調整版。",
+ values: [65, 65, 70, 80, 70, 80, 80, 85, 90, 75, 45, 40, 80, 98, 90] 
+},
+ loop_struct: { 
+label: "ループ構造（イベント・運用連動）", 
+desc: "【次章・イベント連動】章完結後も完全に着地させず、100%地点で次のイベントや新章への高揚感・期待を残して終える構造。",
+ values: [60, 65, 70, 75, 80, 85, 80, 85, 90, 75, 50, 55, 80, 90, 85] 
+}
+ }
+ }
+ };
+
+ const VERMONT_ARCS = {
+ rags_to_riches: { 
+key: "rags_to_riches",
+ name: "Rags to Riches（継続的上昇 / 成功譚）", 
+values: [20, 25, 30, 35, 40, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95],
+ desc: "主人公が苦境や平凡な状態から着実に成功・成長を積み重ねていく右肩上がりの構造。",
+ psychology: "読者に強いカタルシス、成長の達成感、ストレートな満足感を与えます。",
+ advice: "途中での障害や挫折が軽すぎると「単調な無双展開」になりがちなため、適度な試練を配置してください。"
+ },
+ tragedy: { 
+key: "tragedy",
+ name: "Tragedy / Riches to Rags（持続的降下 / 悲劇）", 
+values: [80, 75, 70, 65, 60, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5],
+ desc: "平穏や栄華な状態から、致命的な過ちや運命の悪戯によって破滅へと滑落していく悲劇的構造。",
+ psychology: "読者に緊張感、悲壮感、サスペンスや感情の浄化（カタルシス）をもたらします。",
+ advice: "感情値が終始下がり続けると読者が途中で嫌気・離脱を起こしやすいため、一時的な希望や抵抗を描くことが重要です。"
+ },
+ man_in_a_hole: { 
+key: "man_in_a_hole",
+ name: "Man in a Hole（落下からの復活 / 救済型）", 
+values: [60, 55, 50, 45, 35, 25, 20, 25, 40, 55, 65, 75, 85, 90, 80],
+ desc: "平穏から大きなトラブルやどん底へと突入し、そこから這い上がって大逆転を果たす超王道構造。",
+ psychology: "一度深いどん底を経験させることで、クライマックスでの再起と勝利の感動が極大化します。",
+ advice: "絶望（All Is Lost）での感情の引き下げ幅と、そこからの覚醒（Break Into 3）の対比を明確に演出してください。"
+ },
+ icarus: { 
+key: "icarus",
+ name: "Icarus（上昇からの失墜）", 
+values: [30, 40, 50, 60, 70, 80, 85, 75, 60, 45, 30, 20, 15, 10, 5],
+ desc: "序盤〜中盤にかけて急激に成功を収めるものの、傲慢や落とし穴によって一気に転落する構造。",
+ psychology: "前半の急上昇による高揚感と、直後の失墜によるショック・衝撃で強烈な引きを生み出します。",
+ advice: "失墜の根拠（主人公の油断や敵の罠）を丁寧に伏線化しておかないと、不自然な不運に見えるリスクがあります。"
+ },
+ cinderella: { 
+key: "cinderella",
+ name: "Cinderella（上昇→落下→劇的復活）", 
+values: [30, 40, 50, 60, 70, 65, 50, 30, 20, 25, 40, 60, 80, 95, 80],
+ desc: "仮の成功を得た後に絶望へ突き落とされ、最終的に真の勝利を手にする二重の起伏を持つ構造。",
+ psychology: "希望と絶望のギャップによる豊かなドラマ性を生み、商業エンタメ作品で最も高い満足度を得やすいパターンです。",
+ advice: "Midpoint（仮の勝利）とAll Is Lost（絶望）の落差を際立たせ、中弛みを確実に防止しましょう。"
+ },
+ oedipus: { 
+key: "oedipus",
+ name: "Oedipus（落下→上昇→最終的崩壊）", 
+values: [70, 60, 50, 35, 25, 35, 50, 65, 75, 60, 45, 30, 20, 10, 5],
+ desc: "試練による落下から持ち直して勝利に近づくものの、運命の皮肉や衝撃の真相によって崩壊する構造。",
+ psychology: "運命の不可避さや皮肉、強いドラマティック・アイロニー（劇的皮肉）を感じさせます。",
+ advice: "救いのない展開が続くため、キャラクターの圧倒的魅力や謎解き要素で読者の興味を維持する必要があります。"
+ }
+ };
+
+ let currentMode = 'basic';
+ let currentFeedbackTab = 'beats';
+ let targetEmotion = [...FRAME_PRESETS.none.frames.none.values];
+ 
+let stepsData = BEATS.map(b => ({
+ percent: b.percent,
+ beat: b.beat,
+ labelJa: b.labelJa,
+ mapping: "", 
+predictedEmotion: 0,
+ outer: 0,
+ inner: 0,
+ enemy: 0
+ }));
+
+ let evaluationsList = []; 
+let chartInstance = null;
+
+ window.onload = function() {
+ const savedTheme = localStorage.getItem('analyzer_theme') || 'dark';
+ setTheme(savedTheme);
+ updateFrameOptions();
+ renderSliders();
+ initChart();
+ updateSaveListDropdown();
+ runDiagnostics();
+ renderFeedbackPanel();
+ renderArcListModalBody();
+ };
+
+ function setTheme(theme) {
+ document.documentElement.setAttribute('data-theme', theme);
+ localStorage.setItem('analyzer_theme', theme);
+ updateThemeButtonText();
+
+ if (chartInstance) {
+ updateChartTheme();
+ }
+ }
+
+ function toggleTheme() {
+ const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+ setTheme(currentTheme === 'light' ? 'dark' : 'light');
+ }
+
+ function updateThemeButtonText() {
+ const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+ const btn = document.getElementById('theme-toggle-btn');
+ if (btn) {
+ btn.innerHTML = currentTheme === 'light' ? '☀️ ライト' : '🌙 ダーク';
+ }
+ }
+
+ function updateChartTheme() {
+ const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+ const isLight = (currentTheme === 'light');
+ const gridColor = isLight ? '#cbd5e1' : '#334155';
+ const tickColor = isLight ? '#64748b' : '#94a3b8';
+ const legendColor = isLight ? '#0f172a' : '#f8fafc';
+
+ chartInstance.options.scales.x.grid.color = gridColor;
+ chartInstance.options.scales.x.ticks.color = tickColor;
+ chartInstance.options.scales.y.grid.color = gridColor;
+ chartInstance.options.scales.y.ticks.color = tickColor;
+ chartInstance.options.plugins.legend.labels.color = legendColor;
+ chartInstance.update();
+ }
+
+ function setMode(mode) {
+ currentMode = mode;
+ document.getElementById('btn-basic').classList.toggle('active', mode === 'basic');
+ document.getElementById('btn-detailed').classList.toggle('active', mode === 'detailed');
+ 
+renderSliders();
+ updateChart();
+ runDiagnostics();
+ renderRulesModal();
+ }
+
+ function updateFrameOptions() {
+ const mediaSelect = document.getElementById('media-type-select');
+ const frameSelect = document.getElementById('frame-select');
+ const selectedMedia = mediaSelect.value;
+ 
+frameSelect.innerHTML = '';
+ const mediaData = FRAME_PRESETS[selectedMedia] || FRAME_PRESETS.none;
+ const frames = mediaData.frames;
+ 
+for (const key in frames) {
+ const opt = document.createElement('option');
+ opt.value = key;
+ opt.textContent = frames[key].label;
+ frameSelect.appendChild(opt);
+ }
+ applyPreset();
+ }
+
+ function applyPreset() {
+ const mediaVal = document.getElementById('media-type-select').value;
+ const frameVal = document.getElementById('frame-select').value;
+ const descBox = document.getElementById('frame-description');
+ 
+if (FRAME_PRESETS[mediaVal] && FRAME_PRESETS[mediaVal].frames[frameVal]) {
+ const frameObj = FRAME_PRESETS[mediaVal].frames[frameVal];
+ targetEmotion = [...frameObj.values];
+ descBox.textContent = frameObj.desc || "";
+ } else {
+ targetEmotion = [...FRAME_PRESETS.none.frames.none.values];
+ descBox.textContent = FRAME_PRESETS.none.frames.none.desc;
+ }
+ updateChart();
+ }
+
+ function renderSliders() {
+ const container = document.getElementById('sliders-container');
+ container.innerHTML = '';
+
+ stepsData.forEach((data, index) => {
+ const row = document.createElement('div');
+ row.className = 'slider-row';
+ 
+let html = `
+ <div class="slider-row-header">
+ <span class="step-label" title="クリックで解説表示" onclick="showBeatDescription(${index})">${data.percent}% (${data.labelJa})</span>
+ <input type="text" class="mapping-input" placeholder="進行度指定 (例: 第1章 / p.15)" value="${data.mapping || ''}" onchange="handleMappingInput(${index}, this.value)">
+ </div>
+ <div class="slider-inputs">
+ `;
+ 
+html += `
+ <div class="slider-group">
+ <label style="color:var(--accent-color);">予想感情</label>
+ <input type="range" id="range-predictedEmotion-${index}" min="0" max="100" value="${data.predictedEmotion}" oninput="handleSliderInput(${index}, 'predictedEmotion', this.value)">
+ </div>
+ <input type="number" id="num-predictedEmotion-${index}" class="num-input" min="0" max="100" value="${data.predictedEmotion}" onchange="handleNumberInput(${index}, 'predictedEmotion', this.value)">
+ `;
+
+ html += `
+ <div class="slider-group">
+ <label style="color:var(--outer-color);">外的状況</label>
+ <input type="range" id="range-outer-${index}" min="0" max="100" value="${data.outer}" oninput="handleSliderInput(${index}, 'outer', this.value)">
+ </div>
+ <input type="number" id="num-outer-${index}" class="num-input" min="0" max="100" value="${data.outer}" onchange="handleNumberInput(${index}, 'outer', this.value)">
+ `;
+
+ if (currentMode === 'detailed') {
+ html += `
+ <div class="slider-group">
+ <label style="color:var(--inner-color);">内的状況</label>
+ <input type="range" id="range-inner-${index}" min="0" max="100" value="${data.inner}" oninput="handleSliderInput(${index}, 'inner', this.value)">
+ </div>
+ <input type="number" id="num-inner-${index}" class="num-input" min="0" max="100" value="${data.inner}" onchange="handleNumberInput(${index}, 'inner', this.value)">
+ 
+<div class="slider-group">
+ <label style="color:var(--enemy-color);">敵の脅威</label>
+ <input type="range" id="range-enemy-${index}" min="0" max="100" value="${data.enemy}" oninput="handleSliderInput(${index}, 'enemy', this.value)">
+ </div>
+ <input type="number" id="num-enemy-${index}" class="num-input" min="0" max="100" value="${data.enemy}" onchange="handleNumberInput(${index}, 'enemy', this.value)">
+ `;
+ }
+
+ html += `</div>`;
+ row.innerHTML = html;
+ container.appendChild(row);
+ });
+ }
+
+ function handleMappingInput(index, val) {
+ stepsData[index].mapping = val;
+ updateChart();
+ }
+
+ function showBeatDescription(index) {
+ const beat = BEATS[index];
+ document.getElementById('modal-beat-title').innerText = `${beat.percent}% : ${beat.labelJa} (${beat.beat})`;
+ document.getElementById('modal-beat-body').innerText = beat.desc;
+ openModal('beat-modal');
+ }
+
+ function openModal(id) {
+ if (id === 'rules-modal') renderRulesModal();
+ document.getElementById(id).classList.remove('hidden');
+ }
+
+ function closeModal(id, e) {
+ if (e && e.target !== e.currentTarget) return;
+ document.getElementById(id).classList.add('hidden');
+ }
+
+ function handleSliderInput(index, key, val) {
+ val = parseInt(val) || 0;
+ stepsData[index][key] = val;
+ const numElem = document.getElementById(`num-${key}-${index}`);
+ if (numElem) numElem.value = val;
+ updateChart();
+ runDiagnostics();
+ }
+
+ function handleNumberInput(index, key, val) {
+ val = Math.min(100, Math.max(0, parseInt(val) || 0));
+ stepsData[index][key] = val;
+ const rangeElem = document.getElementById(`range-${key}-${index}`);
+ if (rangeElem) rangeElem.value = val;
+ updateChart();
+ runDiagnostics();
+ }
+
+ function resetAllValues() {
+ stepsData.forEach(d => {
+ d.predictedEmotion = 0;
+ d.outer = 0;
+ d.inner = 0;
+ d.enemy = 0;
+ });
+ renderSliders();
+ updateChart();
+ runDiagnostics();
+ }
+
+ function getAverageEvaluations() {
+ if (!evaluationsList || evaluationsList.length === 0) return null;
+ const sums = new Array(15).fill(0);
+ evaluationsList.forEach(e => {
+ if (e.scores && e.scores.length === 15) {
+ e.scores.forEach((sc, i) => sums[i] += sc);
+ }
+ });
+ return sums.map(s => Math.round(s / evaluationsList.length));
+ }
+
+ function getLikeTop3() {
+ const evaluatorCount = evaluationsList.length;
+ if (evaluatorCount === 0) return [];
+
+ const results = BEATS.map((beat, index) => {
+ const likeCount = evaluationsList.reduce((count, evaluation) => {
+ return count + (Array.isArray(evaluation.likedScenes) && evaluation.likedScenes[index] === true ? 1 : 0);
+ }, 0);
+ return {
+ index,
+ beat,
+ likeCount,
+ evaluatorCount,
+ rate: (likeCount / evaluatorCount) * 100
+ };
+ }).filter(item => item.likeCount > 0);
+
+ results.sort((a, b) => b.rate - a.rate || b.likeCount - a.likeCount || a.index - b.index);
+
+ let previousRate = null;
+ let currentRank = 0;
+ results.forEach((item, index) => {
+ if (previousRate === null || item.rate !== previousRate) {
+ currentRank = index + 1;
+ previousRate = item.rate;
+ }
+ item.rank = currentRank;
+ });
+
+ return results.filter(item => item.rank <= 3);
+ }
+
+ function renderLikeTop3() {
+ const container = document.getElementById('like-top3-list');
+ if (!container) return;
+ container.innerHTML = '';
+
+ const top3 = getLikeTop3();
+ if (top3.length === 0) {
+ container.innerHTML = '<div class="like-top3-empty">いいねのある評価データがありません。</div>';
+ return;
+ }
+
+ top3.forEach(item => {
+ const rank = item.rank;
+ const div = document.createElement('div');
+ div.className = `like-top3-item rank-${rank}`;
+ const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
+ const displayTitle = item.beat.labelJa;
+ const rateText = Number.isInteger(item.rate) ? `${item.rate}%` : `${item.rate.toFixed(1)}%`;
+ div.innerHTML = `
+ <span class="like-top3-rank">${medal}</span>
+ <strong>${escapeHtml(displayTitle)}</strong>
+ <span>${rateText}（${item.likeCount}/${item.evaluatorCount}人）</span>
+ `;
+ container.appendChild(div);
+ });
+ }
+
+ const likeHighlightPlugin = {
+ id: 'likeHighlightPlugin',
+ beforeDatasetsDraw(chart) {
+ const top3 = getLikeTop3();
+ if (!top3.length) return;
+
+ const xScale = chart.scales.x;
+ const chartArea = chart.chartArea;
+ if (!xScale || !chartArea) return;
+
+ const ctx = chart.ctx;
+ const colors = ['rgba(250, 204, 21, 0.14)', 'rgba(148, 163, 184, 0.13)', 'rgba(180, 130, 80, 0.13)'];
+ const borderColors = ['rgba(234, 179, 8, 0.45)', 'rgba(100, 116, 139, 0.35)', 'rgba(146, 95, 55, 0.35)'];
+
+ top3.forEach(item => {
+ const rankIndex = Math.max(0, Math.min(2, item.rank - 1));
+ const x = xScale.getPixelForValue(item.index);
+ const left = Math.max(chartArea.left, item.index === 0 ? chartArea.left : x - (xScale.getPixelForValue(item.index) - xScale.getPixelForValue(item.index - 1)) / 2);
+ const right = Math.min(chartArea.right, item.index === BEATS.length - 1 ? chartArea.right : x + (xScale.getPixelForValue(item.index + 1) - x) / 2);
+
+ ctx.save();
+ ctx.fillStyle = colors[rankIndex];
+ ctx.fillRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top);
+ ctx.strokeStyle = borderColors[rankIndex];
+ ctx.lineWidth = 1;
+ ctx.strokeRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top);
+ ctx.restore();
+ });
+ }
+ };
+
+ function initChart() {
+ const ctx = document.getElementById('scenarioChart').getContext('2d');
+ const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+ const isLight = (currentTheme === 'light');
+ const gridColor = isLight ? '#cbd5e1' : '#334155';
+ const tickColor = isLight ? '#64748b' : '#94a3b8';
+ const legendColor = isLight ? '#0f172a' : '#f8fafc';
+
+ chartInstance = new Chart(ctx, {
+ type: 'line',
+ data: getChartData(),
+ plugins: [likeHighlightPlugin],
+ options: {
+ responsive: true,
+ maintainAspectRatio: false,
+ animation: false,
+ scales: {
+ y: { min: 0, max: 100, grid: { color: gridColor }, ticks: { color: tickColor } },
+ x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } }
+ },
+ plugins: {
+ legend: { labels: { color: legendColor, font: { size: 11 } } }
+ }
+ }
+ });
+ renderLikeTop3();
+ }
+
+ function getChartData() {
+ const labels = BEATS.map((b, i) => {
+ const userMap = stepsData[i].mapping ? stepsData[i].mapping.trim() : '';
+ if (userMap) {
+ return `${b.percent}% ${userMap}`;
+ } else {
+ return `${b.percent}% ${b.labelJa}`;
+ }
+ });
+ 
+const mediaVal = document.getElementById('media-type-select').value;
+ const isNone = (mediaVal === 'none');
+
+ const datasets = [
+ {
+ label: '目標感情曲線 (ガイド)',
+ data: targetEmotion,
+ borderColor: '#94a3b8',
+ borderDash: [4, 4],
+ borderWidth: isNone ? 0 : 2,
+ pointRadius: isNone ? 0 : 3,
+ hidden: isNone,
+ fill: false
+ },
+ {
+ label: '予想感情曲線',
+ data: stepsData.map(d => d.predictedEmotion),
+ borderColor: '#38bdf8',
+ backgroundColor: 'rgba(56, 189, 248, 0.1)',
+ borderWidth: 3,
+ tension: 0.2
+ }
+ ];
+
+ const avgEval = getAverageEvaluations();
+ if (avgEval) {
+ datasets.push({
+ label: `評価感情曲線 (${evaluationsList.length}件の平均)`,
+ data: avgEval,
+ borderColor: '#a855f7',
+ backgroundColor: 'rgba(168, 85, 247, 0.15)',
+ borderWidth: 2.5,
+ tension: 0.2
+ });
+ }
+
+ datasets.push({
+ label: '主人公の外的状況',
+ data: stepsData.map(d => d.outer),
+ borderColor: '#f59e0b',
+ borderDash: [5, 5],
+ borderWidth: 2,
+ tension: 0.2
+ });
+
+ if (currentMode === 'detailed') {
+ datasets.push(
+ {
+ label: '主人公の内的状況（メンタル）',
+ data: stepsData.map(d => d.inner),
+ borderColor: '#10b981',
+ borderDash: [3, 3],
+ borderWidth: 2,
+ tension: 0.2
+ },
+ {
+ label: '障害・敵の脅威度',
+ data: stepsData.map(d => d.enemy),
+ borderColor: '#ef4444',
+ borderWidth: 2,
+ tension: 0.2
+ }
+ );
+ }
+
+ return { labels, datasets };
+ }
+
+ function updateChart() {
+ if (chartInstance) {
+ chartInstance.data = getChartData();
+ chartInstance.update();
+ }
+ renderLikeTop3();
+ }
+
+ function calculatePearsonCorrelation(x, y) {
+ const n = x.length;
+ if (n === 0 || y.length !== n) return 0;
+ let sumX = 0, sumY = 0, sumX2 = 0, sumY2 = 0, sumXY = 0;
+ for (let i = 0; i < n; i++) {
+ sumX += x[i];
+ sumY += y[i];
+ sumX2 += x[i] * x[i];
+ sumY2 += y[i] * y[i];
+ sumXY += x[i] * y[i];
+ }
+ const varX = (n * sumX2) - (sumX * sumX);
+ const varY = (n * sumY2) - (sumY * sumY);
+
+ if (Math.abs(varX) <= 1e-9 || Math.abs(varY) <= 1e-9) {
+ return 0;
+ }
+
+ const num = (n * sumXY) - (sumX * sumY);
+ const den = Math.sqrt(varX * varY);
+ 
+if (den === 0 || isNaN(den)) return 0;
+ const r = num / den;
+ return isNaN(r) ? 0 : r;
+ }
+
+ function classifyEmotionalArc(emotionVector) {
+ const isConstant = emotionVector.every(v => v === emotionVector[0]);
+ if (isConstant) {
+ return {
+ key: "none",
+ name: "判定不能（全数値が平坦）",
+ r: "0.00"
+ };
+ }
+
+ let bestArcKey = "";
+ let maxR = -2;
+ for (const key in VERMONT_ARCS) {
+ let r = calculatePearsonCorrelation(emotionVector, VERMONT_ARCS[key].values);
+ if (isNaN(r)) r = 0;
+ if (r > maxR) {
+ maxR = r;
+ bestArcKey = key;
+ }
+ }
+
+ if (!bestArcKey || maxR <= -2) {
+ return {
+ key: "none",
+ name: "判定不能",
+ r: "0.00"
+ };
+ }
+
+ return {
+ key: bestArcKey,
+ name: VERMONT_ARCS[bestArcKey].name,
+ r: maxR.toFixed(2)
+ };
+ }
+
+ function runDiagnostics() {
+ const container = document.getElementById('feedback-container');
+ const badgeElem = document.getElementById('diagnostics-summary-badge');
+ container.innerHTML = '';
+
+ const Em = stepsData.map(d => d.predictedEmotion);
+ const Out = stepsData.map(d => d.outer);
+ const In = stepsData.map(d => d.inner);
+ const En = stepsData.map(d => d.enemy);
+ const avgEval = getAverageEvaluations();
+
+ const targetVector = avgEval ? avgEval : Em;
+ const isUnset = targetVector.every(v => v === 0);
+ 
+const arcDetailBox = document.getElementById('arc-detail-box');
+
+ if (!isUnset) {
+ const arcResult = classifyEmotionalArc(targetVector);
+ const sourceLabel = avgEval ? `評価感情曲線` : "予想感情曲線";
+ 
+if (arcResult.key === "none") {
+ document.getElementById('arc-type-text').innerHTML = `<strong>${arcResult.name}</strong>`;
+ arcDetailBox.classList.add('hidden');
+ } else {
+ document.getElementById('arc-type-text').innerHTML = `<strong>${arcResult.name}</strong> （${sourceLabel}との類似度: $r = ${arcResult.r}$）`;
+
+ const arcInfo = VERMONT_ARCS[arcResult.key];
+ if (arcInfo) {
+ arcDetailBox.classList.remove('hidden');
+ arcDetailBox.innerHTML = `
+ <div><strong>【構造的特徴】</strong> ${arcInfo.desc}</div>
+ <div style="margin-top:3px;"><strong>【読者への心理効果】</strong> ${arcInfo.psychology}</div>
+ <div style="margin-top:3px; color:var(--text-main);"><strong>【注意点・コツ】</strong> ${arcInfo.advice}</div>
+ <div style="margin-top:4px; font-size:0.72rem; color:var(--text-muted); border-top:1px dashed rgba(255,255,255,0.2); padding-top:4px;">
+ 💡 <strong>相関係数 $r$ の見方</strong>: $r \ge 0.7$（強い類似・一致） / $0.4 \le r < 0.7$（中程度の類似） / $r < 0.4$（低類似・独自構造）
+ </div>
+ `;
+ }
+ }
+ } else {
+ document.getElementById('arc-type-text').innerText = "未入力（プロット数値を入力してください）";
+ arcDetailBox.classList.add('hidden');
+ }
+
+ if (Em.every(v => v === 0)) {
+ const div = document.createElement('div');
+ div.className = 'feedback-item feedback-info';
+ div.innerHTML = '<strong>【プロット未入力】</strong><br>スライダーを入力してプロットを設定してください。自動診断が実行されます。';
+ container.appendChild(div);
+
+ if (badgeElem) {
+ badgeElem.style.background = '#475569';
+ badgeElem.style.color = '#ffffff';
+ badgeElem.style.border = 'none';
+ badgeElem.textContent = '⚪ 【プロット未入力】スライダーを入力してプロットを設定してください。自動診断が実行されます。';
+ }
+ renderAchievementCards({});
+ return;
+ }
+
+ let redCount = 0;
+ let yellowCount = 0;
+
+ function addAlert(type, title, desc) {
+ if (type === 'danger') redCount++;
+ if (type === 'warning') yellowCount++;
+ const div = document.createElement('div');
+ div.className = `feedback-item feedback-${type}`;
+ const icon = (type === 'danger') ? '🔴' : '🟡';
+ div.innerHTML = `<strong>【${icon} ${title}】</strong><br>${desc}`;
+ container.appendChild(div);
+ }
+
+ const achievedStatus = { coaster: false, innerConflict: false, dramaticIrony: false, awakening: false };
+
+ if (avgEval) {
+ stepsData.forEach((d, i) => {
+ const gap = Math.abs(d.predictedEmotion - avgEval[i]);
+ if (gap >= 30) {
+ const mapStr = d.mapping ? ` (${d.mapping})` : '';
+ addAlert('danger', `読者体験ギャップ [ビート ${d.percent}%${mapStr}]`, 
+`作者の意図（${d.predictedEmotion}）と読者評価（${avgEval[i]}）の間に${gap}ptの大きな解離があります。演出の補強やリライトを検討してください。`);
+ }
+ });
+ }
+
+ if (Em[3] < 50) addAlert('danger', '序盤離脱リスク', '12%地点 (きっかけ) の予想感情（50未満）が低めです。冒頭の引き込み不足による初期離脱のリスクがあります。');
+
+ const minEmVal = Math.min(...Em.slice(0, 12));
+ const maxEmVal = Math.max(...Em.slice(12, 15));
+ if (maxEmVal - minEmVal < 40) addAlert('danger', 'カタルシス不足', '全話最低点からクライマックス（77%〜100%）への高低差が40未満です。カタルシス（解放感）が薄い可能性があります。');
+
+ const midSlice = Em.slice(7, 10);
+ if (Math.max(...midSlice) - Math.min(...midSlice) <= 5) addAlert('warning', '中弛み', '35%〜65% (第2幕中盤) の感情数値が平坦です。中盤のテンポ停滞を防ぐため起伏を追加してください。');
+
+ let consecutiveHigh = 0, isExhausted = false;
+ for (let i = 5; i <= 9; i++) {
+ if (Em[i] >= 80) consecutiveHigh++; else consecutiveHigh = 0;
+ if (consecutiveHigh >= 3) isExhausted = true;
+ }
+ if (isExhausted) addAlert('warning', '感情飽和', '中盤（25%〜65%）に高い刺激（80以上）が3ステップ以上連続しています。心理的疲弊や感覚麻痺のリスクがあります。');
+
+ if (Em[10] <= 30 && Em[11] < 50 && Em[13] >= 80 && (Em[12] - Em[11]) < 15) {
+ addAlert('danger', '唐突な解決', 'どん底・絶望（68%〜75%）から第3幕突入の助走を欠いたままクライマックスへ急回復しています。ご都合主義に見える危険があります。');
+ }
+
+ if (Em[13] >= 80 && Em[14] >= 85) addAlert('warning', '結末の未着地', 'クライマックスの緊張が高止まりしたまま終了しています。余韻を残すため100%地点で感情値を落ち着かせることを検討してください。');
+
+ let twistCount = 0;
+ for (let i = 1; i < 15; i++) {
+ if (Math.abs(Em[i] - Em[i-1]) >= 40) twistCount++;
+ }
+ if (twistCount >= 3) {
+ addAlert('warning', 'ジェットコースター効果', '感情の急変（±40以上）が3箇所以上存在します。脈絡のない不自然な展開に感じられる可能性があります。');
+ } else if (twistCount >= 1) {
+ achievedStatus.coaster = true;
+ }
+
+ if (Em[13] >= 80 && (Em[13] - Em[9]) < 20) addAlert('warning', 'ビルドアップ不足', '90%のクライマックスに向けて、65%地点からの盛り上がり（助走）が不足しています。');
+
+ const avgEmotion = Em.reduce((a, b) => a + b, 0) / 15;
+ if (avgEmotion < 35) addAlert('danger', '感情の全般的不全', '作品全体の感情平均値が35未満です。救いがなく鬱屈したトーンによる読者離脱のリスクがあります。');
+ else if (avgEmotion > 80) addAlert('warning', '感情の全般的不全', '作品全体の感情平均値が80を超えています。メリハリ（緩急）が不足している可能性があります。');
+
+ const preMax = Math.max(...Em.slice(0, 13));
+ if (Em[13] < preMax) {
+ addAlert('warning', 'クライマックス高揚注意', '90%（クライマックス）の感情値がそれ以前の最高値より低く設定されています。ジャンル上の演出である場合を除き、カタルシスが減殺される可能性があります。');
+ }
+
+ if (Em[8] >= 85 && (Em[13] - Em[8]) < 10) addAlert('warning', 'ミッドポイント過剰高揚', '50%（ミッドポイント）での高揚感が高すぎ、クライマックス（90%）での上昇余地を圧迫しています。');
+
+ if (Em[13] <= Em[12] && Em[13] >= 70) addAlert('danger', '第3幕不全・決戦前失速', '77%（第3幕突入/再起）から90%（クライマックス）にかけて感情値の上昇が見られず、失速しています。');
+
+ if (currentMode === 'detailed') {
+ let maxGap = 0;
+ stepsData.forEach(d => { const gap = Math.abs(d.outer - d.inner); if (gap > maxGap) maxGap = gap; });
+ if (maxGap >= 40) achievedStatus.innerConflict = true;
+
+ if (stepsData.some(d => d.outer >= 60 && d.enemy >= 70)) achievedStatus.dramaticIrony = true;
+
+ if (stepsData.slice(5, 13).every(d => d.outer >= 60 && d.outer > d.enemy)) {
+ addAlert('warning', '危機感欠如・無双化', '中盤を通して主人公が常に圧倒的優位です。障害やハラハラ感が消滅するリスクがあります。');
+ }
+
+ let hopelessCount = 0, isHopeless = false;
+ for (let i = 5; i <= 11; i++) {
+ if (Out[i] <= 20 && In[i] <= 20) hopelessCount++; else hopelessCount = 0;
+ if (hopelessCount >= 3) isHopeless = true;
+ }
+ if (isHopeless) addAlert('danger', '過剰ストレス', '状況・メンタルともにどん底の状態が3ステップ以上続いています。ストレス軽減のための小さな成功を挟んでください。');
+
+ if (Out[10] > 30 && In[10] > 30) addAlert('warning', 'All Is Lost未配置', '68%（絶望・どん底）での明確な絶望が存在しません。逆転のカタルシスが弱まる可能性があります。');
+
+ if (En[14] >= 50) addAlert('danger', '脅威の不完全燃焼', '100%（結末）時点で障害・敵の脅威度が50以上残っています。不完全燃焼になる危険があります。');
+
+ const minOut = Math.min(Out[10], Out[11]);
+ const maxInGain = In[12] - Math.min(In[10], In[11]);
+ if (minOut <= 30 && maxInGain >= 30) achievedStatus.awakening = true;
+ }
+
+ renderAchievementCards(achievedStatus);
+
+ if (badgeElem) {
+ if (redCount > 0 || yellowCount > 0) {
+ if (redCount > 0) {
+ badgeElem.style.background = 'rgba(239, 68, 68, 0.2)';
+ badgeElem.style.color = 'var(--text-main)';
+ badgeElem.style.border = '1px solid var(--danger-color)';
+ } else {
+ badgeElem.style.background = 'rgba(245, 158, 11, 0.2)';
+ badgeElem.style.color = 'var(--text-main)';
+ badgeElem.style.border = '1px solid var(--warning-color)';
+ }
+ badgeElem.textContent = `🔴 危険: ${redCount}件 / 🟡 警告: ${yellowCount}件`;
+ } else {
+ badgeElem.style.background = 'rgba(16, 185, 129, 0.2)';
+ badgeElem.style.color = 'var(--text-main)';
+ badgeElem.style.border = '1px solid var(--success-color)';
+ badgeElem.textContent = '🟢 重大な構造上の問題は見つかりませんでした';
+
+ const div = document.createElement('div');
+ div.className = 'feedback-item feedback-info';
+ div.style.borderColor = 'var(--success-color)';
+ div.innerHTML = '<strong>【良好な構造】</strong><br>重大な構造上の問題は見つかりませんでした';
+ container.appendChild(div);
+ }
+ }
+ }
+
+ function renderAchievementCards(status) {
+ const container = document.getElementById('achievements-container');
+ container.innerHTML = '';
+
+ const allCards = [
+ { key: 'coaster', title: 'ジェットコースター効果', achieved: !!status.coaster, desc: '感情の急変（±40以上）による強力なサプライズや劇的な急展開。(Swain, 1965)', basicShow: true },
+ { key: 'innerConflict', title: '優れた内面葛藤', achieved: !!status.innerConflict, desc: '「主人公の外的状況」と「内的状況（メンタル）」に大きなギャップ（±40以上）が存在する。(McKee, 1997)', basicShow: false },
+ { key: 'dramaticIrony', title: '劇的アイロニー', achieved: !!status.dramaticIrony, desc: '主人公が優位（Outer>=60）と誤認する裏で強大な敵の脅威（Enemy>=70）が迫った、高度なサスペンス構造。(Hitchcock / Marks, 2007)', basicShow: false },
+ { key: 'awakening', title: '主人公の内面覚醒', achieved: !!status.awakening, desc: 'どん底の絶望的状況下（Outer<=30）から、主人公が精神的に覚醒し再起する胸熱な展開（Innerが+30以上急上昇）。(Snyder, 2005)', basicShow: false }
+ ];
+
+ const targetCards = (currentMode === 'basic') ? allCards.filter(c => c.basicShow) : allCards;
+ let achievedCount = 0;
+
+ targetCards.forEach(card => {
+ if (card.achieved) achievedCount++;
+ const div = document.createElement('div');
+ div.className = `achievement-card ${card.achieved ? 'achieved' : 'unachieved'}`;
+ div.innerHTML = `
+ <details>
+ <summary>
+ <span class="achievement-title-text">${card.achieved ? '🟢' : '✖'} ${card.title}</span>
+ <span class="badge-status">${card.achieved ? '達成中' : '未達成'}</span>
+ </summary>
+ <div class="achievement-desc">${card.desc}</div>
+ </details>
+ `;
+ container.appendChild(div);
+ });
+
+ const badgeElem = document.getElementById('achievement-badge');
+ if (badgeElem) {
+ badgeElem.textContent = `達成状況: ${achievedCount}/${targetCards.length}`;
+ }
+ }
+
+ function switchFeedbackTab(tab) {
+ currentFeedbackTab = tab;
+ document.getElementById('tab-beats').classList.toggle('active', tab === 'beats');
+ document.getElementById('tab-overall').classList.toggle('active', tab === 'overall');
+ renderFeedbackPanel();
+ }
+
+ function createCommentItemHTML(evaluatorName, rawText) {
+ if (!rawText) return '';
+ const safeText = escapeHtml(rawText);
+ const safeEvaluator = escapeHtml(evaluatorName || "匿名読者");
+ 
+const firstNewLineIndex = rawText.indexOf('\n');
+ let firstLine = (firstNewLineIndex !== -1) ? rawText.substring(0, firstNewLineIndex) : rawText;
+ 
+let isLong = false;
+ if (firstNewLineIndex !== -1 || rawText.length > 60) {
+ isLong = true;
+ }
+ 
+if (firstLine.length > 60) {
+ firstLine = firstLine.substring(0, 60) + '...';
+ } else if (firstNewLineIndex !== -1 && rawText.length > firstLine.length) {
+ firstLine = firstLine + '...';
+ }
+
+ const safeFirstLine = escapeHtml(firstLine);
+
+ if (isLong) {
+ return `
+ <div style="margin-bottom:6px;">
+ <details class="comment-details">
+ <summary class="comment-summary">
+ <span class="comment-user">👤 ${safeEvaluator}:</span>
+ <span class="comment-preview">${safeFirstLine}</span>
+ </summary>
+ <div class="comment-full-body">${safeText}</div>
+ </details>
+ </div>
+ `;
+ } else {
+ return `
+ <div style="margin-bottom:6px; padding-left:8px; border-left:2px solid var(--eval-color);">
+ <span class="comment-user">👤 ${safeEvaluator}:</span>
+ <span class="comment-text">${safeText}</span>
+ </div>
+ `;
+ }
+ }
+
+ function renderFeedbackPanel() {
+ const container = document.getElementById('feedback-tab-content');
+ container.innerHTML = '';
+
+ if (!evaluationsList || evaluationsList.length === 0) {
+ container.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">インポートされた読者評価データ（JSON）がありません。「評価データJSONインポート」から読者の回答を取り込んでください。</div>';
+ return;
+ }
+
+ if (currentFeedbackTab === 'beats') {
+ stepsData.forEach((b, i) => {
+ const commentsForBeat = [];
+ evaluationsList.forEach(e => {
+ if (e.beatComments && e.beatComments[i]) {
+ commentsForBeat.push({
+ evaluator: e.evaluatorName || "匿名読者",
+ text: e.beatComments[i]
+ });
+ }
+ });
+
+ if (commentsForBeat.length > 0) {
+ const beatCard = document.createElement('div');
+ beatCard.className = 'comment-card';
+ const displayTitle = b.mapping ? `${b.percent}% ${b.mapping}` : `${b.percent}% ${b.labelJa}`;
+ 
+let html = `<div style="font-weight:bold; color:var(--accent-color); margin-bottom:6px;">【${displayTitle}】</div>`;
+ commentsForBeat.forEach(c => {
+ html += createCommentItemHTML(c.evaluator, c.text);
+ });
+ beatCard.innerHTML = html;
+ container.appendChild(beatCard);
+ }
+ });
+
+ if (container.children.length === 0) {
+ container.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">各シーンの「推せるポイント」コメントはまだ記入されていません。</div>';
+ }
+ } else {
+ evaluationsList.forEach(e => {
+ if (e.overallComment) {
+ const card = document.createElement('div');
+ card.className = 'comment-card';
+ card.innerHTML = createCommentItemHTML(e.evaluatorName || "匿名読者", e.overallComment);
+ container.appendChild(card);
+ }
+ });
+
+ if (container.children.length === 0) {
+ container.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">「総合評価・感想コメント」はまだ記入されていません。</div>';
+ }
+ }
+ }
+
+ function renderArcListModalBody() {
+ const body = document.getElementById('arc-list-body');
+ body.innerHTML = '';
+ for (const key in VERMONT_ARCS) {
+ const arc = VERMONT_ARCS[key];
+ const div = document.createElement('div');
+ div.style.marginBottom = "10px";
+ div.style.padding = "8px";
+ div.style.background = "rgba(0,0,0,0.15)";
+ div.style.borderRadius = "4px";
+ div.innerHTML = `
+ <div style="font-weight:bold; color:var(--accent-color);">${arc.name}</div>
+ <div style="margin-top:2px;">${arc.desc}</div>
+ <div style="margin-top:2px; color:var(--text-muted);"><strong>心理効果:</strong> ${arc.psychology}</div>
+ `;
+ body.appendChild(div);
+ }
+ }
+
+ function renderRulesModal() {
+ const isDetailed = (currentMode === 'detailed');
+ const detailedElements = document.querySelectorAll('.detailed-only-rule');
+ detailedElements.forEach(el => {
+ if (isDetailed) {
+ el.classList.remove('hidden');
+ } else {
+ el.classList.add('hidden');
+ }
+ });
+ }
+
+ function escapeHtml(str) {
+ if (!str) return '';
+ return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+ }
+
+ function sanitizeFileName(name) {
+ return String(name || '無題のプロジェクト')
+ .replace(/[\\/:*?"<>|]/g, '_')
+ .replace(/[\x00-\x1F]/g, '_')
+ .replace(/[. ]+$/g, '_')
+ .trim() || '無題のプロジェクト';
+ }
+
+ function getCurrentDataObject() {
+ return {
+ version: "7.3",
+ updatedAt: new Date().toISOString(),
+ title: document.getElementById('project-title').value || "無題のプロジェクト",
+ settings: { 
+mode: currentMode, 
+mediaType: document.getElementById('media-type-select').value,
+ frameType: document.getElementById('frame-select').value
+ },
+ targetEmotion: targetEmotion,
+ stepsData: stepsData,
+ evaluations: evaluationsList
+ };
+ }
+
+ function loadDataObject(obj) {
+ if (!obj || !obj.stepsData) return alert('無効なデータ形式です。');
+ document.getElementById('project-title').value = obj.title || "無題のプロジェクト";
+
+ if (obj.settings) {
+ if (obj.settings.mediaType) {
+ document.getElementById('media-type-select').value = obj.settings.mediaType;
+ updateFrameOptions();
+ }
+ if (obj.settings.frameType) {
+ document.getElementById('frame-select').value = obj.settings.frameType;
+ applyPreset();
+ }
+ if (obj.settings.mode) setMode(obj.settings.mode);
+ }
+
+ if (obj.targetEmotion) targetEmotion = obj.targetEmotion;
+ evaluationsList = obj.evaluations || [];
+
+ stepsData = BEATS.map((b, i) => {
+ const loaded = obj.stepsData[i] || {};
+ return {
+ percent: b.percent,
+ beat: b.beat,
+ labelJa: b.labelJa,
+ mapping: loaded.mapping || "",
+ predictedEmotion: loaded.predictedEmotion ?? 0,
+ outer: loaded.outer ?? 0,
+ inner: loaded.inner ?? 0,
+ enemy: loaded.enemy ?? 0
+ };
+ });
+
+ renderSliders();
+ updateChart();
+ runDiagnostics();
+ renderFeedbackPanel();
+ }
+
+ function saveToLocalStorage() {
+ const data = getCurrentDataObject();
+ const key = "scenario_plot_v7_" + data.title;
+ if (localStorage.getItem(key) && !confirm(`作品「${data.title}」を上書き保存しますか？`)) return;
+ localStorage.setItem(key, JSON.stringify(data));
+ updateSaveListDropdown();
+ alert(`作品「${data.title}」を保存しました。`);
+ }
+
+ function updateSaveListDropdown() {
+ const select = document.getElementById('save-list');
+ select.innerHTML = '<option value="">-- データを選択 --</option>';
+ for (let i = 0; i < localStorage.length; i++) {
+ const key = localStorage.key(i);
+ if (key.startsWith("scenario_plot_v7_")) {
+ try {
+ const item = JSON.parse(localStorage.getItem(key));
+ if (item && item.version === '7.3') {
+ const option = document.createElement('option');
+ option.value = key;
+ option.textContent = `${item.title} (v${item.version})`;
+ select.appendChild(option);
+ }
+ } catch(e){}
+ }
+ }
+ }
+
+ function loadFromLocalStorage() {
+ const key = document.getElementById('save-list').value;
+ if (!key) return alert('作品を選択してください。');
+ const dataStr = localStorage.getItem(key);
+ if (dataStr) loadDataObject(JSON.parse(dataStr));
+ }
+
+ function deleteFromLocalStorage() {
+ const key = document.getElementById('save-list').value;
+ if (!key) return alert('作品を選択してください。');
+ if (confirm('削除してもよろしいですか？')) {
+ localStorage.removeItem(key);
+ updateSaveListDropdown();
+ }
+ }
+
+ function resetForm() {
+ if (confirm('新規作成しますか？（未保存の変更は失われます）')) {
+ document.getElementById('project-title').value = "無題のプロジェクト";
+ document.getElementById('media-type-select').value = "none";
+ evaluationsList = [];
+ updateFrameOptions();
+ resetAllValues();
+ renderFeedbackPanel();
+ }
+ }
+
+ function exportJSON() {
+ const data = getCurrentDataObject();
+ const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = `${sanitizeFileName(data.title)}_v7.3_plot_data.json`;
+ a.click();
+ URL.revokeObjectURL(url);
+ }
+
+ function importJSON(event) {
+ const file = event.target.files[0];
+ if (!file) return;
+ const reader = new FileReader();
+ reader.onload = function(e) {
+ try {
+ const data = JSON.parse(e.target.result);
+ if (!data || data.version !== '7.3') {
+ alert('エラー: 規格外または互換性のない作品データです。(v7.3対応ファイルが必要)');
+ return;
+ }
+ if (!Array.isArray(data.stepsData) || data.stepsData.length !== 15) {
+ alert('エラー: 15ビート構造のデータ配列数が不正です。');
+ return;
+ }
+ const isValid = data.stepsData.every(s => 
+typeof s.predictedEmotion === 'number' && s.predictedEmotion >= 0 && s.predictedEmotion <= 100 &&
+ typeof s.outer === 'number' && s.outer >= 0 && s.outer <= 100
+ );
+ if (!isValid) {
+ alert('エラー: プロットデータ内の数値型または値の範囲（0〜100）が不正です。');
+ return;
+ }
+ loadDataObject(data);
+ alert(`作品「${data.title}」を読み込みました。`);
+ } catch (err) {
+ alert('JSONファイルの解析に失敗しました。構造が不正です。');
+ }
+ };
+ reader.readAsText(file);
+ event.target.value = '';
+ }
+
+ function exportEvaluationForm() {
+ const data = getCurrentDataObject();
+ const evalPackage = {
+ version: "7.3_eval_form",
+ title: data.title,
+ mappings: stepsData.map(d => ({ percent: d.percent, labelJa: d.labelJa, mapping: d.mapping })),
+ instructions: "指定された進行度（ページ/章）を読みながら、各ビートでの実感を0〜100で評価してください。"
+ };
+ const blob = new Blob([JSON.stringify(evalPackage, null, 2)], { type: "application/json" });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = `${sanitizeFileName(data.title)}_v7.3_eval_form.json`;
+ a.click();
+ URL.revokeObjectURL(url);
+ }
+
+ function importEvaluationJSON(event) {
+ const files = Array.from(event.target.files || []);
+ if (files.length === 0) return;
+ const currentTitle = document.getElementById('project-title').value.trim();
+ let successCount = 0;
+ const errors = [];
+
+ const processFile = (file, index) => {
+ const reader = new FileReader();
+ reader.onload = function(e) {
+ try {
+ const res = JSON.parse(e.target.result);
+ if (!res || res.version !== '7.3_eval_result') {
+ errors.push(`${file.name}: エラー: 規格外または互換性のない評価データです。(v7.3対応ファイルが必要)`);
+ return finish();
+ }
+ const evalTitle = (res.title || "").trim();
+ 
+if (evalTitle !== currentTitle) {
+ errors.push(`${file.name}: エラー: 作品タイトルが不一致のため読み込めません。\n【現在の編集作品】: ${currentTitle}\n【評価データの作品】: ${evalTitle || "未指定"}`);
+ return finish();
+ }
+ 
+if (!Array.isArray(res.scores) || res.scores.length !== 15) {
+ errors.push(`${file.name}: エラー: 評価スコア配列が不正です（15ビートの数値配列が必要です）。`);
+ return finish();
+ }
+ 
+const validScores = res.scores.every(s => typeof s === 'number' && s >= 0 && s <= 100);
+ if (!validScores) {
+ errors.push(`${file.name}: エラー: 評価スコア内の数値範囲（0〜100）または型が不正です。`);
+ return finish();
+ }
+
+ if (res.likedScenes !== undefined) {
+ if (!Array.isArray(res.likedScenes) || res.likedScenes.length !== 15 || !res.likedScenes.every(v => typeof v === 'boolean')) {
+ errors.push(`${file.name}: エラー: いいね情報の形式が不正です（15ビートの真偽値配列が必要です）。`);
+ return finish();
+ }
+ } else {
+ res.likedScenes = new Array(15).fill(false);
+ }
+
+ evaluationsList.push(res);
+ successCount++;
+ } catch (err) {
+ errors.push(`${file.name}: 評価データJSONの解析に失敗しました。`);
+ }
+ finish();
+ };
+ reader.onerror = function() {
+ errors.push(`${file.name}: 評価データJSONの解析に失敗しました。`);
+ finish();
+ };
+ reader.readAsText(file);
+ };
+
+ let completed = 0;
+ const finish = () => {
+ completed++;
+ if (completed < files.length) return;
+ if (successCount > 0) {
+ updateChart();
+ runDiagnostics();
+ renderFeedbackPanel();
+ }
+ let message = `評価データを正常に取り込みました。（累積評価数: ${evaluationsList.length}件）`;
+ if (successCount === 0) {
+ message = '評価データを正常に取り込めませんでした。';
+ }
+ if (files.length > 1) {
+ message += `\n\n今回選択した評価データ: ${files.length}件\n正常に取り込んだ評価: ${successCount}件\n読み込めなかった評価: ${errors.length}件`;
+ }
+ if (errors.length > 0) {
+ message += `\n\n読み込めなかったファイル:\n${errors.join('\n')}`;
+ }
+ alert(message);
+ event.target.value = '';
+ };
+
+ files.forEach((file, index) => processFile(file, index));
+ }
+
+ function clearEvaluations() {
+ if (confirm('取り込んだ評価データを全てクリアしますか？')) {
+ evaluationsList = [];
+ updateChart();
+ runDiagnostics();
+ renderFeedbackPanel();
+ }
+ }
+
+ function wrapText(ctx, text, maxWidth) {
+ if (!text) return [];
+ const lines = [];
+ const paragraphs = text.split('\n');
+ for (let p = 0; p < paragraphs.length; p++) {
+ let currentLine = '';
+ const str = paragraphs[p];
+ for (let i = 0; i < str.length; i++) {
+ const char = str[i];
+ const testLine = currentLine + char;
+ const metrics = ctx.measureText(testLine);
+ if (metrics.width > maxWidth && i > 0) {
+ lines.push(currentLine);
+ currentLine = char;
+ } else {
+ currentLine = testLine;
+ }
+ }
+ if (currentLine) lines.push(currentLine);
+ }
+ return lines;
+ }
+
+ function exportReportImage() {
+ if (!chartInstance) return alert('グラフが初期化されていません。');
+
+ const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+ const isLight = (currentTheme === 'light');
+
+ const bgColor = isLight ? '#f8fafc' : '#0f172a';
+ const cardBg = isLight ? '#ffffff' : '#1e293b';
+ const borderColor = isLight ? '#cbd5e1' : '#334155';
+ const textColor = isLight ? '#0f172a' : '#f8fafc';
+ const textMuted = isLight ? '#64748b' : '#94a3b8';
+ const accentColor = isLight ? '#0284c7' : '#38bdf8';
+
+ const title = document.getElementById('project-title').value || "無題のプロジェクト";
+ const mediaSelect = document.getElementById('media-type-select');
+ const mediaText = mediaSelect.options[mediaSelect.selectedIndex].text;
+ const frameSelect = document.getElementById('frame-select');
+ const frameText = frameSelect.options[frameSelect.selectedIndex].text;
+ const nowStr = new Date().toLocaleString('ja-JP');
+
+ const Em = stepsData.map(d => d.predictedEmotion);
+ const avgEval = getAverageEvaluations();
+ const targetVector = avgEval ? avgEval : Em;
+ const isUnset = targetVector.every(v => v === 0);
+ const arcResult = isUnset ? null : classifyEmotionalArc(targetVector);
+
+ const arcTagDetails = document.getElementById('arc-tag-details');
+ const achievementDetails = document.getElementById('card-achievements-details');
+ const diagnosticsDetails = document.getElementById('card-diagnostics-details');
+ const previousArcTagOpen = arcTagDetails ? arcTagDetails.open : false;
+ const previousAchievementOpen = achievementDetails ? achievementDetails.open : false;
+ const previousDiagnosticsOpen = diagnosticsDetails ? diagnosticsDetails.open : false;
+ const achievementItemDetails = Array.from(document.querySelectorAll('#achievements-container .achievement-card details'));
+ const previousAchievementItemOpen = achievementItemDetails.map(details => details.open);
+ 
+if (arcTagDetails) arcTagDetails.open = true;
+ if (achievementDetails) achievementDetails.open = true;
+ if (diagnosticsDetails) diagnosticsDetails.open = true;
+ achievementItemDetails.forEach(details => { details.open = true; });
+
+ const alertElements = document.querySelectorAll('#feedback-container .feedback-item');
+ const achievementElements = document.querySelectorAll('#achievements-container .achievement-card');
+ const likeTop3 = getLikeTop3();
+
+ updateChartTheme();
+ const chartImgData = chartInstance.toBase64Image();
+
+ const img = new Image();
+ img.onload = function() {
+ const canvas = document.createElement('canvas');
+ const ctx = canvas.getContext('2d');
+ const scale = 2;
+ const width = 800;
+ const padding = 20;
+ const contentWidth = width - (padding * 2);
+
+ let y = padding;
+
+ y += 95 + 15;
+
+ const chartAspect = chartInstance.height / chartInstance.width || 0.5;
+ const chartHeight = contentWidth * Math.min(chartAspect, 0.55);
+ y += chartHeight + 20 + 15;
+
+ const likeTop3LineHeight = 20;
+ const likeTop3BlockHeight = 35 + (likeTop3.length > 0 ? likeTop3.length * likeTop3LineHeight : likeTop3LineHeight);
+ y += likeTop3BlockHeight + 15;
+
+ if (arcResult && arcResult.key !== "none") {
+ const arcInfo = VERMONT_ARCS[arcResult.key];
+ ctx.font = '12px sans-serif';
+ const arcDescLines = arcInfo ? wrapText(ctx, `【構造的特徴】 ${arcInfo.desc}\n【心理効果】 ${arcInfo.psychology}`, contentWidth - 30) : [];
+ const arcCardHeight = 45 + (arcDescLines.length * 16);
+ y += arcCardHeight + 15;
+ }
+
+ const alertList = [];
+ alertElements.forEach(el => {
+ const isDanger = el.classList.contains('feedback-danger');
+ const isWarning = el.classList.contains('feedback-warning');
+ const isInfo = el.classList.contains('feedback-info');
+ const text = el.innerText.trim();
+ alertList.push({ isDanger, isWarning, isInfo, text });
+ });
+
+ ctx.font = '12px sans-serif';
+ let alertBlockHeight = 35;
+ const processedAlerts = alertList.map(item => {
+ const lines = wrapText(ctx, item.text, contentWidth - 40);
+ const itemH = lines.length * 16 + 12;
+ alertBlockHeight += itemH;
+ return { ...item, lines, itemH };
+ });
+ y += alertBlockHeight + 15;
+
+ const achievementList = [];
+ achievementElements.forEach(el => {
+ const isAchieved = el.classList.contains('achieved');
+ const titleText = el.querySelector('summary')?.innerText.trim() || '';
+ const descText = el.querySelector('.achievement-desc')?.textContent.trim() || '';
+ achievementList.push({ isAchieved, titleText, descText });
+ });
+
+ ctx.font = '12px sans-serif';
+ let achievementBlockHeight = 35;
+ const processedAchievements = achievementList.map(item => {
+ const lines = wrapText(ctx, item.descText, contentWidth - 40);
+ const itemH = 24 + lines.length * 16 + 8;
+ achievementBlockHeight += itemH;
+ return { ...item, lines, itemH };
+ });
+ y += achievementBlockHeight + 15;
+
+ y += padding;
+ const totalHeight = y;
+
+ canvas.width = width * scale;
+ canvas.height = totalHeight * scale;
+ ctx.scale(scale, scale);
+
+ ctx.fillStyle = bgColor;
+ ctx.fillRect(0, 0, width, totalHeight);
+
+ let curY = padding;
+
+ function drawCardRect(x, y, w, h, bg, border) {
+ ctx.fillStyle = bg;
+ ctx.fillRect(x, y, w, h);
+ ctx.strokeStyle = border;
+ ctx.lineWidth = 1;
+ ctx.strokeRect(x, y, w, h);
+ }
+
+ // 1. ヘッダー描画
+ const headerHeight = 95;
+ drawCardRect(padding, curY, contentWidth, headerHeight, cardBg, borderColor);
+ 
+ctx.fillStyle = accentColor;
+ ctx.font = 'bold 16px sans-serif';
+ ctx.fillText('シナリオ構造 ＆ 消費者感情アナライザー PRO v7.3 - 分析レポート', padding + 15, curY + 25);
+
+ ctx.fillStyle = textColor;
+ ctx.font = 'bold 14px sans-serif';
+ ctx.fillText(`作品名: ${title}`, padding + 15, curY + 48);
+
+ ctx.fillStyle = textMuted;
+ ctx.font = '12px sans-serif';
+ ctx.fillText(`設定: ${mediaText} / ${frameText}`, padding + 15, curY + 68);
+ ctx.fillText(`出力日時: ${nowStr}`, padding + 15, curY + 85);
+
+ curY += headerHeight + 15;
+
+ // 2. グラフ描画
+ const chartCardHeight = chartHeight + 20;
+ drawCardRect(padding, curY, contentWidth, chartCardHeight, cardBg, borderColor);
+ ctx.drawImage(img, padding + 10, curY + 10, contentWidth - 20, chartHeight);
+
+ curY += chartCardHeight + 15;
+
+ // 3. いいね率Top3描画
+ drawCardRect(padding, curY, contentWidth, likeTop3BlockHeight, cardBg, borderColor);
+ ctx.fillStyle = isLight ? '#7e22ce' : '#a855f7';
+ ctx.font = 'bold 14px sans-serif';
+ ctx.fillText('👍 いいね率Top3', padding + 15, curY + 25);
+
+ let likeY = curY + 48;
+ if (likeTop3.length === 0) {
+ ctx.fillStyle = textMuted;
+ ctx.font = '12px sans-serif';
+ ctx.fillText('いいねのある評価データがありません。', padding + 20, likeY);
+ } else {
+ likeTop3.forEach(item => {
+ const rank = item.rank;
+ const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
+ const bg = isLight
+ ? (rank === 1 ? '#fff9db' : rank === 2 ? '#f1f3f5' : '#f5eee7')
+ : (rank === 1 ? 'rgba(234, 179, 8, 0.16)' : rank === 2 ? 'rgba(148, 163, 184, 0.16)' : 'rgba(180, 130, 80, 0.16)');
+ const border = isLight
+ ? (rank === 1 ? '#f3e8a6' : rank === 2 ? '#d7dbe0' : '#dccbb8')
+ : (rank === 1 ? 'rgba(234, 179, 8, 0.35)' : rank === 2 ? 'rgba(148, 163, 184, 0.35)' : 'rgba(180, 130, 80, 0.35)');
+ const rateText = Number.isInteger(item.rate) ? `${item.rate}%` : `${item.rate.toFixed(1)}%`;
+ drawCardRect(padding + 10, likeY - 15, contentWidth - 20, 18, bg, border);
+ ctx.fillStyle = textColor;
+ ctx.font = '12px sans-serif';
+ ctx.fillText(`${medal} ${item.beat.labelJa} ${rateText}（${item.likeCount}/${item.evaluatorCount}人）`, padding + 20, likeY - 2);
+ likeY += likeTop3LineHeight;
+ });
+ }
+ curY += likeTop3BlockHeight + 15;
+
+ // 4. アーク判定描画
+ if (arcResult && arcResult.key !== "none") {
+ const arcInfo = VERMONT_ARCS[arcResult.key];
+ ctx.font = '12px sans-serif';
+ const arcDescLines = arcInfo ? wrapText(ctx, `【構造的特徴】 ${arcInfo.desc}\n【心理効果】 ${arcInfo.psychology}`, contentWidth - 30) : [];
+ const arcCardHeight = 45 + (arcDescLines.length * 16);
+
+ drawCardRect(padding, curY, contentWidth, arcCardHeight, cardBg, borderColor);
+
+ ctx.fillStyle = accentColor;
+ ctx.font = 'bold 14px sans-serif';
+ ctx.fillText(`📈 ストーリーアーク判定: ${arcResult.name} (r = ${arcResult.r})`, padding + 15, curY + 25);
+
+ ctx.fillStyle = textColor;
+ ctx.font = '12px sans-serif';
+ let lineY = curY + 45;
+ arcDescLines.forEach(line => {
+ ctx.fillText(line, padding + 15, lineY);
+ lineY += 16;
+ });
+
+ curY += arcCardHeight + 15;
+ }
+
+ // 5. 構造アラート描画
+ drawCardRect(padding, curY, contentWidth, alertBlockHeight, cardBg, borderColor);
+
+ ctx.fillStyle = accentColor;
+ ctx.font = 'bold 14px sans-serif';
+ ctx.fillText('🔍 自動構造診断 ＆ 読者ギャップアラート', padding + 15, curY + 25);
+
+ let alertY = curY + 40;
+ processedAlerts.forEach(item => {
+ const alertBoxBg = item.isDanger ? (isLight ? '#fef2f2' : 'rgba(239, 68, 68, 0.12)') :
+ item.isWarning ? (isLight ? '#fffbeb' : 'rgba(245, 158, 11, 0.12)') :
+ (isLight ? '#f0f9ff' : 'rgba(56, 189, 248, 0.12)');
+ const alertBorder = item.isDanger ? '#ef4444' : item.isWarning ? '#f59e0b' : '#38bdf8';
+ const alertTextColor = item.isDanger ? (isLight ? '#991b1b' : '#fca5a5') :
+ item.isWarning ? (isLight ? '#92400e' : '#fcd34d') :
+ (isLight ? '#075985' : '#7dd3fc');
+
+ drawCardRect(padding + 10, alertY, contentWidth - 20, item.itemH - 4, alertBoxBg, alertBorder);
+
+ ctx.fillStyle = alertTextColor;
+ ctx.font = '12px sans-serif';
+ let lY = alertY + 16;
+ item.lines.forEach(line => {
+ ctx.fillText(line, padding + 20, lY);
+ lY += 16;
+ });
+ alertY += item.itemH;
+ });
+
+ // 6. 達成カード描画
+ drawCardRect(padding, curY, contentWidth, achievementBlockHeight, cardBg, borderColor);
+
+ ctx.fillStyle = accentColor;
+ ctx.font = 'bold 14px sans-serif';
+ ctx.fillText('✨ 優れたドラマ構造の達成状況', padding + 15, curY + 25);
+
+ let achY = curY + 40;
+ processedAchievements.forEach(item => {
+ const achBg = item.isAchieved ? (isLight ? '#ecfdf5' : 'rgba(16, 185, 129, 0.1)') : (isLight ? '#fef2f2' : '#1a1012');
+ const achBorder = item.isAchieved ? '#10b981' : (isLight ? '#fecaca' : '#4a1d24');
+ const achTitleColor = item.isAchieved ? (isLight ? '#047857' : '#10b981') : (isLight ? '#dc2626' : '#f87171');
+
+ drawCardRect(padding + 10, achY, contentWidth - 20, item.itemH - 4, achBg, achBorder);
+
+ ctx.fillStyle = achTitleColor;
+ ctx.font = 'bold 12px sans-serif';
+ ctx.fillText(item.titleText, padding + 20, achY + 18);
+
+ ctx.fillStyle = textColor;
+ ctx.font = '12px sans-serif';
+ let lY = achY + 34;
+ item.lines.forEach(line => {
+ ctx.fillText(line, padding + 20, lY);
+ lY += 16;
+ });
+
+ achY += item.itemH;
+ });
+
+ // PNGダウンロード処理
+ const a = document.createElement('a');
+ a.href = canvas.toDataURL('image/png');
+ a.download = `${sanitizeFileName(title)}_v7.3_analysis_report.png`;
+ a.click();
+
+ // 開閉状態の復元
+ achievementItemDetails.forEach((details, index) => {
+ details.open = previousAchievementItemOpen[index];
+ });
+ if (arcTagDetails) arcTagDetails.open = previousArcTagOpen;
+ if (achievementDetails) achievementDetails.open = previousAchievementOpen;
+ if (diagnosticsDetails) diagnosticsDetails.open = previousDiagnosticsOpen;
+ };
+ img.src = chartImgData;
+ }
+</script>
+
+</body>
+</html>
